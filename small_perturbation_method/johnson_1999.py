@@ -91,8 +91,6 @@ def beta0_v(th, ep):
 # ----------------------------------------------------------------------------------------------#
 
 # Orden uno #
-
-
 def c_is(ki, th, ph, ths, phs):
     return (
         kix(ki, th, ph) * ksx(ki, ths, phs) + kiy(ki, th, ph) * ksy(ki, ths, phs)
@@ -106,8 +104,6 @@ def s_is(ki, th, ph, ths, phs):
 
 
 # MODO TE #
-
-
 def alpha1_h(ki, th, ph, ths, phs, ep):
     return (
         -2

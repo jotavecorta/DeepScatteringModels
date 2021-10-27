@@ -11,18 +11,16 @@ import numpy as np
 from numpy import cos, sin, pi, log10, exp, sqrt, prod
 
 # Vectores de onda
-
-
 def kx(k, th, ph):
-    return k * sin(th) * cos(ph)
+    return k*sin(th)*cos(ph)
 
 
 def ky(k, th, ph):
-    return k * sin(th) * sin(ph)
+    return k*sin(th)*sin(ph)
 
 
 def alpha(k, x, y, ep):
-    return sqrt(ep * k ** 2 - x ** 2 - y ** 2 + 0j)
+    return sqrt(ep*k**2 - x**2 - y** 2 + 0j)
 
 
 # Producto matricial
@@ -49,18 +47,8 @@ def matrix_inverse(A):
 def auxiliar_vectors(lambda_inc, theta_inc, phi_inc, theta, phi):
     """Return K_1 and K_2 vectors for PSD"""
 
-    k_1 = (
-        2
-        * np.pi
-        / lambda_inc
-        * (np.sin(theta) * np.cos(phi) - np.sin(theta_inc) * np.cos(phi_inc))
-    )
-    k_2 = (
-        2
-        * np.pi
-        / lambda_inc
-        * (np.sin(theta) * np.sin(phi) - np.sin(theta_inc) * np.sin(phi_inc))
-    )
+    k_1 = 2*np.pi/lambda_inc*(np.sin(theta)*np.cos(phi) - np.sin(theta_inc)*np.cos(phi_inc))
+    k_2 = 2*np.pi/lambda_inc*(np.sin(theta)*np.sin(phi) - np.sin(theta_inc)*np.sin(phi_inc))
 
     return k_1, k_2
 
@@ -72,13 +60,12 @@ def power_spectral_density(k_1, k_2, rms_high, corr_length, acf_type="gaussian")
 
     # Defines psd by autocorrelation function
     auto_corr = {
-        "gaussian": np.exp(-0.25 * l ** 2 * (k_1 ** 2 + k_2 ** 2)) / (4 * np.pi),
-        "exponential": 1
-        / (2 * np.pi * (1 + (k_1 ** 2 + k_2 ** 2) * l ** 2) ** (3 / 2)),
-        "power_law": np.exp(-np.sqrt(k_1 ** 2 + k_2 ** 2) * l) / (2 * np.pi),
+        "gaussian": np.exp(-0.25*l**2*(k_1**2 + k_2**2))/(4*np.pi),
+        "exponential": 1/(2*np.pi*(1 + (k_1**2 + k_2**2)*l**2)**(3 / 2)),
+        "power_law": np.exp(-np.sqrt(k_1**2 + k_2**2)*l)/(2 * np.pi),
     }
 
-    return s ** 2 * l ** 2 * auto_corr[acf_type]
+    return s**2*l**2*auto_corr[acf_type]
 
 
 # Matrices Fh y Fv
@@ -329,8 +316,6 @@ def suma_O1(ki, ths, phs, thi, phi, ep1, ep2, s1, l1, s2, l2, d):
     X_b = X1_b(ksx, ksy, kix, kiy, ki, ep0, ep1, ep2, d)
 
     # Cálculo sección eficaz
-    out_ub = f * np.abs(X_u) ** 2 * W_1 + f * np.abs(
-        X_b
-    ) ** 2 * W_2
+    out_ub = f*np.abs(X_u)**2*W_1 + f*np.abs(X_b)**2*W_2
 
     return out_ub
