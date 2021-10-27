@@ -281,10 +281,10 @@ def X1_u(ux, uy, qx, qy, ki, ep0, ep1, ep2, d):
 
 def X1_b(ux, uy, qx, qy, ki, ep0, ep1, ep2, d):
 
-    X1 = 2 * 1j * Qmas(ux, uy, qx, qy, ki, ep1, ep2)
-    f_uq = np.exp(1j * d * (alpha(ki, ux, uy, ep1) + alpha(ki, qx, qy, ep1)))
+    X1 = 2*1j*Qmas(ux, uy, qx, qy, ki, ep1, ep2)
+    f_uq = np.exp(1j*d*(alpha(ki, ux, uy, ep1) + alpha(ki, qx, qy, ep1)))
 
-    m1 = f_uq * matrix_prod(T10p_U0p(ux, uy, ux, uy, ki, ep0, ep1, ep2, d), X1)
+    m1 = f_uq*matrix_prod(T10p_U0p(ux, uy, ux, uy, ki, ep0, ep1, ep2, d), X1)
     m = matrix_prod(m1, T10p_U0p(qx, qy, qx, qy, ki, ep0, ep1, ep2, d))
 
     return m
@@ -309,7 +309,7 @@ def suma_O1(ki, ths, phs, thi, phi, ep1, ep2, s1, l1, s2, l2, d):
     W_2 = power_spectral_density(k_1, k_2, s2, l2)
 
     # Prefactor de la seccion eficaz
-    f = ki ** 4 * np.cos(ths) ** 2 * np.cos(thi) / (2 * np.pi) ** 2
+    f = ki**4*np.cos(ths)**2*np.cos(thi)/(2*np.pi)**2
 
     # Amplitudes de scattering up y bottom
     X_u = X1_u(ksx, ksy, kix, kiy, ki, ep0, ep1, ep2, d)
