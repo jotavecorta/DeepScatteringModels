@@ -65,12 +65,12 @@ def power_spectral_density(k_1, k_2, rms_high, corr_length, acf_type = 'gaussian
     
     # Defines psd by autocorrelation function 
     auto_corr = {
-        'gaussian': (4*np.pi)*np.exp(-0.25*l**2*(k_1**2+k_2**2)),
-        'exponential': (2*np.pi*(1+(k_1**2+k_2**2)*l**2)**(3/2)),
-        'power_law': (2*np.pi)*np.exp(-np.sqrt(k_1**2+k_2**2)*l)
-        }
+        "gaussian": np.exp(-0.25*l**2*(k_1**2 + k_2**2))/(4*np.pi),
+        "exponential": 1/(2*np.pi*(1 + (k_1**2 + k_2**2)*l**2)**(3 / 2)),
+        "power_law": np.exp(-np.sqrt(k_1**2 + k_2**2)*l)/(2 * np.pi),
+    }
     
-    return s**2*l**2/auto_corr[acf_type]
+    return s**2*l**2*auto_corr[acf_type]
 
 def sigma_HH(k, theta, theta_inc, f_hh, W):    
     return 4*np.pi*k**2*np.cos(theta)*W*np.abs(f_hh)**2/np.cos(theta_inc)
