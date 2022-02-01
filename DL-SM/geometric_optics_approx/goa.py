@@ -42,9 +42,27 @@ def slopes_prob_density(wave_vectors, rms_high, corr_len):
     return np.exp(-(gamma_x**2 + gamma_y**2)/sigma_sqr)/sigma_sqr/np.pi
 
 
-def local_fresnel_coefficients(theta_inc, phi_inc, epsilon1):
+def local_fresnel_coefficients(wave_vectors, epsilon):
+    # Unpack incident vectors
+    k_ix, k_iy, k_iz, k = wave_vectors['incident']
+
+    # Surface slopes on MSP
+    gamma_x, gamma_y = slopes(wave_vectors)
+
+    # Normal Vector module
+    n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
+
+    # Cos and squared Sin of local angle of incidence
+    ctheta_li = (gamma_x*k_ix + gamma_y*k_iy + k_iz)/(k*n_mod)
+    stheta_li = 1 - ctheta_li**2
+
+    # Fresnel coefficients
+    Rh = (ctheta_li - np.sqrt(epsilon - stheta_li)) / \
+        (ctheta_li + np.sqrt(epsilon - stheta_li))  
+    Rv = (epsilon*ctheta_li - np.sqrt(epsilon - stheta_li)) / \
+        (epsilon*ctheta_li + np.sqrt(epsilon - stheta_li))    
     
-    pass
+    return {'horizontal': Rh, 'vertical': Rv}
 
 def kirchhoff_amplitudes(wave_vectors, fresnel_coeff):
     pass
