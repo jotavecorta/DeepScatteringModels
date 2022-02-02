@@ -9,7 +9,7 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     k = 2*np.pi/lambda_inc
     k_ix = k*np.sin(theta_inc)*np.cos(phi_inc)
     k_iy = k*np.sin(theta_inc)*np.sin(phi_inc)
-    k_iz = k*np.cos(theta_inc)
+    k_iz = -k*np.cos(theta_inc)
     
     # Scatter wave
     k_x = k*np.sin(theta)*np.cos(phi)
@@ -63,6 +63,37 @@ def local_fresnel_coefficients(wave_vectors, epsilon):
         (epsilon*ctheta_li + np.sqrt(epsilon - stheta_li))    
     
     return {'horizontal': Rh, 'vertical': Rv}
+
+def local_polarization_vectors(wave_vectors):
+    # Unpack wave vectors
+    k_ix, k_iy, k_iz, k = wave_vectors['incident']
+
+    # Surface slopes on MSP
+    gamma_x, gamma_y = slopes(wave_vectors)
+
+    # Surface normal unitary vector
+    n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
+    nx, ny, nz = -gamma_x/n_mod, -gamma_y/n_mod, 1/n_mod
+
+    # Local perpendicular vector
+    qx = k_iy/k*nz - k_iz/k*ny 
+    qy = - k_ix/k*nz + k_iz/k*nx
+    qz = k_ix/k*ny - k_iy/k*nx
+    q_mod = np.sqrt(qx**2 + qy**2 + qz**2)
+
+    # Local paralell vector
+    px = k_iz/k*qy/q_mod - k_iy/k*qz/q_mod 
+    py = - k_iz/k*qx/q_mod + k_ix/k*qz/q_mod 
+    pz = k_iy/k*qx/q_mod - k_ix/k*qy/q_mod 
+
+    return {'normal': (nx, ny, nz),
+            'paralell': (px, py, pz),
+            'perpendicular': (qx/q_mod, qy/q_mod, qz/q_mod)}
+    
+
+
+
+
 
 def kirchhoff_amplitudes(wave_vectors, fresnel_coeff):
     pass

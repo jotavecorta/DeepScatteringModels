@@ -9,7 +9,7 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     k = 2*np.pi/lambda_inc
     k_ix = k*np.sin(theta_inc)*np.cos(phi_inc)
     k_iy = k*np.sin(theta_inc)*np.sin(phi_inc)
-    k_iz = k*np.cos(theta_inc)
+    k_iz = -k*np.cos(theta_inc)
     
     # Scatter wave
     k_x = k*np.sin(theta)*np.cos(phi)
@@ -81,7 +81,7 @@ def sigma_HV(k, theta, theta_inc, f_hv, W):
 def sigma_VV(k, theta, theta_inc, f_vv, W):
     return 4*np.pi*k**2*np.cos(theta)/np.cos(theta_inc)*W*np.abs(f_vv)**2
 
-def sigma(k, theta, theta_inc, scat_amplitudes , W):
+def sigma(k, theta, theta_inc, scat_amplitudes, W):
     # Unpack first order scatering amplitudes
     f_hh = scat_amplitudes['horizontal']
     f_hv = scat_amplitudes['crosspol']
