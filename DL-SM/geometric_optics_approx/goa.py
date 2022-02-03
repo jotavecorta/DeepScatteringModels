@@ -76,26 +76,49 @@ def local_polarization_vectors(wave_vectors):
     nx, ny, nz = -gamma_x/n_mod, -gamma_y/n_mod, 1/n_mod
 
     # Local perpendicular vector
-    qx = k_iy/k*nz - k_iz/k*ny 
-    qy = - k_ix/k*nz + k_iz/k*nx
-    qz = k_ix/k*ny - k_iy/k*nx
+    qx = k_iy/k * nz - k_iz/k * ny 
+    qy = - k_ix/k * nz + k_iz/k * nx
+    qz = k_ix/k * ny - k_iy/k * nx
     q_mod = np.sqrt(qx**2 + qy**2 + qz**2)
 
-    # Local paralell vector
-    px = k_iz/k*qy/q_mod - k_iy/k*qz/q_mod 
-    py = - k_iz/k*qx/q_mod + k_ix/k*qz/q_mod 
-    pz = k_iy/k*qx/q_mod - k_ix/k*qy/q_mod 
+    # Local parallel vector
+    px = k_iz/k * qy/q_mod - k_iy/k * qz/q_mod 
+    py = - k_iz/k * qx/q_mod + k_ix/k * qz/q_mod 
+    pz = k_iy/k * qx/q_mod - k_ix/k * qy/q_mod 
 
     return {'normal': (nx, ny, nz),
-            'paralell': (px, py, pz),
+            'parallel': (px, py, pz),
             'perpendicular': (qx/q_mod, qy/q_mod, qz/q_mod)}
-    
 
+def global_polarization_vectors(theta_inc, phi_inc, theta, phi):   
+    # Incident vertical polarization
+    v_ix = -np.cos(theta_inc)*np.cos(phi_inc)
+    v_iy = -np.cos(theta_inc)*np.sin(phi_inc)
+    v_iz = -np.sin(theta_inc)
 
+    # Incident horizantal polarization
+    h_ix = - np.sin(phi_inc)
+    h_iy = np.cos(phi_inc)
+    h_iz = 0
 
+    incident_pol = {'horizonal': (h_ix, h_iy, h_iz), 'vertical': (v_ix, v_iy, v_iz)}
 
+    # Scattered vertical polarization
+    v_sx = -np.cos(theta)*np.cos(phi)
+    v_sy = -np.cos(theta)*np.sin(phi)
+    v_sz = -np.sin(theta)
 
-def kirchhoff_amplitudes(wave_vectors, fresnel_coeff):
+    # Scattered horizantal polarization
+    h_sx = - np.sin(phi)
+    h_sy = np.cos(phi)
+    h_sz = 0
+
+    scattered_pol = {'horizonal': (h_sx, h_sy, h_sz), 'vertical': (v_sx, v_sy, v_sz)}    
+
+    return incident_pol, scattered_pol
+             
+
+def kirchhoff_amplitudes(wave_vectors, polarization, fresnel_coeff):
     pass
 
 def four_fold_integration(theta_i, wave_vectors, slope_pdf, scatter_amplitudes):
