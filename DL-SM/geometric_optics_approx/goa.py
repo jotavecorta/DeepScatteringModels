@@ -3,6 +3,7 @@ using Geometric Optics Approximation. All the functions were developed
 based on the equations from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
 
 import numpy as np
+from scipy.special import erfc
 
 def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     # Incident Wave
@@ -180,8 +181,36 @@ def scattering_amplitudes(wave_vectors, polarization, fresnel_coeff):
 
     return {'horizontal': (f_hh, f_hv), 'vertical': (f_vv, f_vh)}
 
-def four_fold_integration(theta_i, wave_vectors, slope_pdf, scatter_amplitudes):
-    pass
+def shadowing(theta_i, phi_inc, theta, phi):
+    # Define some operations
+    v_a = lambda x : corr_len*abs(np.cot(x))/2/rms_high
+    lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a/np.sqrt(np.pi) - erfc(v_a(x))/2
+    
+    if (phi == phi_inc + np.pi and theta >= theta_i):
+        return 1/(1 + lambda_fun(theta_i))
+    elif (phi == phi_inc + np.pi and theta < theta_i):
+        return 1/(1 + lambda_fun(theta))
+    else:
+        return 1/(1 + lambda_fun(theta_i) + lambda_fun(theta))  
 
-def sigma():
+
+def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
+    # Unpack vectors
+    k_ix, k_iy, k_iz, k = wave_vectors['incident']
+    k_x, k_y, k_z = wave_vectors['scatter']
+
+    # Unpack Amplitudes
+    f_hh, f_hv = amplitudes['horizontal']
+    f_vv, f_vh = amplitudes['vertical']
+
+    # Shadowing function
+    S = shadowing() if shadow else 1
+
+    # Scattering Cross Section 
+    sigma = {f'{pol}':-k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
+    in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
+
+    return sigma
+
+def four_fold_integration(theta_i, wave_vectors, p_slope, amplitudes):
     pass
