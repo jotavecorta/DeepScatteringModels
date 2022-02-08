@@ -14,7 +14,7 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     # Scatter wave
     k_x = k*np.sin(theta)*np.cos(phi)
     k_y = k*np.sin(theta)*np.sin(phi)
-    k_z = k*np.sqrt(epsilon - np.sin(theta)**2)
+    k_z = k*np.cos(theta)
     
     # Transmited wave
     kt = np.sqrt(epsilon)*k

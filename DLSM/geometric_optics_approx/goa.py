@@ -12,26 +12,28 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     k_iy = k*np.sin(theta_inc)*np.sin(phi_inc)
     k_iz = -k*np.cos(theta_inc)
     
-    # Scatter wave
+    # Reflected wave
     k_x = k*np.sin(theta)*np.cos(phi)
     k_y = k*np.sin(theta)*np.sin(phi)
-    k_z = k*np.sqrt(epsilon - np.sin(theta)**2)
+    k_z = k*np.cos(theta)
 
     # Pack vectors
-    vectors = {'scatter': (k_x, k_y, k_z), 
+    vectors = {'reflected': (k_x, k_y, k_z), 
                'incident': (k_ix, k_iy, k_iz, k)} 
 
     return vectors     
 
+
 def slopes(wave_vectors):
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
-    k_x, k_y, k_z = wave_vectors['scatter']
+    k_x, k_y, k_z = wave_vectors['reflected']
 
     # Difference Wave Vector components
     k_dx, k_dy, k_dz = k_x - k_ix, k_y - k_iy, k_z - k_iz 
 
     return -k_dx/k_dz, -k_dy/k_dz           
+
 
 def slopes_prob_density(wave_vectors, rms_high, corr_len):
     # Unpack MSP slopes
@@ -65,6 +67,7 @@ def local_fresnel_coefficients(wave_vectors, epsilon):
     
     return {'horizontal': Rh, 'vertical': Rv}
 
+
 def local_polarization_vectors(wave_vectors):
     # Unpack wave vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
@@ -91,6 +94,7 @@ def local_polarization_vectors(wave_vectors):
             'parallel': (px, py, pz),
             'perpendicular': (qx/q_mod, qy/q_mod, qz/q_mod)}
 
+
 def global_polarization_vectors(theta_inc, phi_inc, theta, phi):   
     # Incident vertical polarization
     v_ix = -np.cos(theta_inc)*np.cos(phi_inc)
@@ -102,7 +106,7 @@ def global_polarization_vectors(theta_inc, phi_inc, theta, phi):
     h_iy = np.cos(phi_inc)
     h_iz = 0
 
-    incident_pol = {'horizonal': (h_ix, h_iy, h_iz), 'vertical': (v_ix, v_iy, v_iz)}
+    incident_pol = {'horizontal': (h_ix, h_iy, h_iz), 'vertical': (v_ix, v_iy, v_iz)}
 
     # Scattered vertical polarization
     v_x = -np.cos(theta)*np.cos(phi)
@@ -114,7 +118,7 @@ def global_polarization_vectors(theta_inc, phi_inc, theta, phi):
     h_y = np.cos(phi)
     h_z = 0
 
-    scattered_pol = {'horizonal': (h_x, h_y, h_z), 'vertical': (v_x, v_y, v_z)}    
+    scattered_pol = {'horizontal': (h_x, h_y, h_z), 'vertical': (v_x, v_y, v_z)}    
 
     return incident_pol, scattered_pol
              
@@ -124,7 +128,7 @@ def scattering_amplitudes(wave_vectors, polarization, fresnel_coeff):
     Rough Surfaces: Asymptotic Models', Wiley-ISTE, 2013, page 66, eq. 2.57."""
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
-    k_x, k_y, k_z = wave_vectors['scatter']
+    k_x, k_y, k_z = wave_vectors['reflected']
 
     # Surface slopes on MSP
     gamma_x, gamma_y = slopes(wave_vectors)
@@ -181,6 +185,7 @@ def scattering_amplitudes(wave_vectors, polarization, fresnel_coeff):
 
     return {'horizontal': (f_hh, f_hv), 'vertical': (f_vv, f_vh)}
 
+
 def shadowing(theta_i, phi_inc, theta, phi):
     # Define some operations
     v_a = lambda x : corr_len*abs(np.cot(x))/2/rms_high
@@ -201,7 +206,7 @@ def shadowing(theta_i, phi_inc, theta, phi):
 def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
-    k_x, k_y, k_z = wave_vectors['scatter']
+    k_x, k_y, k_z = wave_vectors['reflected']
 
     # Unpack Amplitudes
     f_hh, f_hv = amplitudes['horizontal']
@@ -214,7 +219,9 @@ def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
     sigma = {f'{pol}':-k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
     in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
 
-    return sigma
+    return sigma 
+
 
 def four_fold_integration(theta_i, wave_vectors, p_slope, amplitudes):
     pass
+
