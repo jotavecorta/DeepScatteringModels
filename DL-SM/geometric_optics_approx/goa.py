@@ -186,12 +186,16 @@ def shadowing(theta_i, phi_inc, theta, phi):
     v_a = lambda x : corr_len*abs(np.cot(x))/2/rms_high
     lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a/np.sqrt(np.pi) - erfc(v_a(x))/2
     
-    if (phi == phi_inc + np.pi and theta >= theta_i):
-        return 1/(1 + lambda_fun(theta_i))
-    elif (phi == phi_inc + np.pi and theta < theta_i):
-        return 1/(1 + lambda_fun(theta))
-    else:
-        return 1/(1 + lambda_fun(theta_i) + lambda_fun(theta))  
+    # Define different shadowing functions
+    S1 = 1/(1 + lambda_fun(theta_i))
+    S2 = 1/(1 + lambda_fun(theta))
+    S3 = 1/(1 + lambda_fun(theta_i) + lambda_fun(theta))
+
+    # Vectorized conditional
+    S = np.where((phi == phi_inc + np.pi and theta >= theta_i), S1, S3)
+    S = np.where((phi == phi_inc + np.pi and theta < theta_i), S2, S)
+
+    return S
 
 
 def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
@@ -202,7 +206,7 @@ def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
     # Unpack Amplitudes
     f_hh, f_hv = amplitudes['horizontal']
     f_vv, f_vh = amplitudes['vertical']
-
+ 
     # Shadowing function
     S = shadowing() if shadow else 1
 
