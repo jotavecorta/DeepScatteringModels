@@ -1,7 +1,6 @@
 """Core script for first order surface scattering calculation module, 
 using Geometric Optics Approximation. All the functions were developed 
 based on the equations from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
-
 import numpy as np
 from scipy.special import erfc
 
@@ -40,7 +39,7 @@ def slopes_prob_density(wave_vectors, rms_high, corr_len):
     gamma_x, gamma_y = slopes(wave_vectors)
 
     # Calculate variance
-    sigma_sqr = 2*rms_high**2/corr_len**2
+    sigma_sqr = 4*rms_high**2/corr_len**2
     
     return np.exp(-(gamma_x**2 + gamma_y**2)/sigma_sqr)/sigma_sqr/np.pi
 
@@ -62,8 +61,8 @@ def local_fresnel_coefficients(wave_vectors, epsilon):
     # Fresnel coefficients
     Rh = (ctheta_li - np.sqrt(epsilon - stheta_li)) / \
         (ctheta_li + np.sqrt(epsilon - stheta_li))  
-    Rv = (epsilon*ctheta_li - np.sqrt(epsilon - stheta_li)) / \
-        (epsilon*ctheta_li + np.sqrt(epsilon - stheta_li))    
+    Rv = (np.sqrt(epsilon)*ctheta_li - np.sqrt(epsilon - stheta_li)) / \
+        (np.sqrt(epsilon)*ctheta_li + np.sqrt(epsilon - stheta_li))    
     
     return {'horizontal': Rh, 'vertical': Rv}
 
