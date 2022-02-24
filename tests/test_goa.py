@@ -73,7 +73,7 @@ def test_slopes(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected):
     TEST_PARAMETERS,
     ids=["scalar", "vectorized"],
 )
-def test_frenell(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected):
+def test_fresnell(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected):
     vectors = goa.wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon)
 
     # Unpack incident vectors

@@ -1,6 +1,10 @@
 """Core script for first order surface scattering calculation module, 
-using Geometric Optics Approximation. All the functions were developed 
-based on the equations from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
+using Geometric Optics Approximation. All the first order KA functions were 
+developed based on the equations from L. Tsang, J. A. Kong, 'Scattering of 
+Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2.
+All the second order KA functions were developed based on the equations
+from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
+
 import numpy as np
 from scipy.special import erfc
 
@@ -14,13 +18,23 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     # Reflected wave
     k_x = k*np.sin(theta)*np.cos(phi)
     k_y = k*np.sin(theta)*np.sin(phi)
-    k_z = k*np.cos(theta)
+    k_z = k*np.cos(theta)  
 
     # Pack vectors
     vectors = {'reflected': (k_x, k_y, k_z), 
                'incident': (k_ix, k_iy, k_iz, k)} 
 
     return vectors     
+
+
+def transmited_vectors(theta_t, phi_t, epsilon):
+    # Transmited wave
+    kt = np.sqrt(epsilon)*k
+    k_tx = kt*np.sin(theta_t)*np.cos(phi_t)
+    k_ty = kt*np.sin(theta_t)*np.sin(phi_t)
+    k_tz = -kt*np.cos(theta_t)  
+
+    return (k_tx, k_ty, k_tz, kt)
 
 
 def slopes(wave_vectors):
@@ -94,7 +108,15 @@ def local_polarization_vectors(wave_vectors):
             'perpendicular': (qx/q_mod, qy/q_mod, qz/q_mod)}
 
 
-def global_polarization_vectors(theta_inc, phi_inc, theta, phi):   
+def global_polarization_vectors(
+    theta_inc, 
+    phi_inc,
+    theta, 
+    phi, 
+    transmited=False, 
+    theta_t=None,
+    phi_t=None
+    ):   
     # Incident vertical polarization
     v_ix = -np.cos(theta_inc)*np.cos(phi_inc)
     v_iy = -np.cos(theta_inc)*np.sin(phi_inc)
@@ -107,20 +129,39 @@ def global_polarization_vectors(theta_inc, phi_inc, theta, phi):
 
     incident_pol = {'horizontal': (h_ix, h_iy, h_iz), 'vertical': (v_ix, v_iy, v_iz)}
 
-    # Scattered vertical polarization
-    v_x = -np.cos(theta)*np.cos(phi)
-    v_y = -np.cos(theta)*np.sin(phi)
+    # Reflected vertical polarization
+    v_x = np.cos(theta)*np.cos(phi)
+    v_y = np.cos(theta)*np.sin(phi)
     v_z = -np.sin(theta)
 
-    # Scattered horizantal polarization
+    # Reflecteded horizantal polarization
     h_x = - np.sin(phi)
     h_y = np.cos(phi)
     h_z = 0
 
-    scattered_pol = {'horizontal': (h_x, h_y, h_z), 'vertical': (v_x, v_y, v_z)}    
+    reflected_pol = {'horizontal': (h_x, h_y, h_z), 'vertical': (v_x, v_y, v_z)} 
+    
+    if transmited:
+        assert (theta_t is not None) and (
+            phi_t is not None), 'theta_t and phi_t must have not null input' \
+                                'value for transmited polarization'
 
-    return incident_pol, scattered_pol
-             
+        # Transmited vertical polarization
+        v_tx = -np.cos(theta_t)*np.cos(phi_t)
+        v_ty = -np.cos(theta_t)*np.sin(phi_t)
+        v_tz = -np.sin(theta_t)
+
+        # Transmited horizantal polarization
+        h_tx = - np.sin(phi_t)
+        h_ty = np.cos(phi_t)
+        h_tz = 0
+
+        transmited_pol = {'horizontal': (h_tx, h_ty, h_tz), 'vertical': (v_tx, v_ty, v_tz)}        
+
+        return incident_pol, reflected_pol, transmited_pol
+    else:    
+        return incident_pol, reflected_pol     
+
 
 def scattering_amplitudes(wave_vectors, polarization, fresnel_coeff):
     """N. Pinel, C. Boulier, 'Electromagnetic Wave Scattering from Random 
@@ -185,10 +226,98 @@ def scattering_amplitudes(wave_vectors, polarization, fresnel_coeff):
     return {'horizontal': (f_hh, f_hv), 'vertical': (f_vv, f_vh)}
 
 
-def shadowing(theta_i, phi_inc, theta, phi):
+def alternative_amplitudes(wave_vectors, polarization, fresnel_coeff):
+    """L. Tsang, J. A. Kong, 'Scattering of Electromagnetic Waves Vol. 3: 
+    Advanced Topics', Wiley-Interscience, 2001, page 66, eqs. 2.1.122."""
+
+    # Unpack vectors
+    k_ix, k_iy, k_iz, k = wave_vectors['incident']
+    k_x, k_y, k_z = wave_vectors['reflected']
+
+    # Unpack global polarization
+    incident_pol, scattered_pol = polarization
+
+    h_ix, h_iy, h_iz = incident_pol['horizontal']
+    v_ix, v_iy, v_iz = incident_pol['vertical']    
+
+    h_x, h_y, h_z = scattered_pol['horizontal']
+    v_x, v_y, v_z = scattered_pol['vertical']
+
+    # Local Fresnel coefficients
+    R_h = fresnel_coeff['horizontal']
+    R_v = fresnel_coeff['vertical']
+
+    # Prefactor
+    mod_ki_x_ks = (k_iy*k_z - k_iz*k_y)**2 + (k_iz*k_x - k_ix*k_z)**2 + (k_ix*k_y - k_iy*k_x)**2 
+    C = ((k_x - k_ix)**2 + (k_y - k_iy)**2 + (k_z - k_iz)**2)/(mod_ki_x_ks*(k_z - k_iz)*k)
+
+    # Horizontal incidence
+    f_hh = C * ((v_ix*k_x + v_iy*k_y + v_iz*k_z) * (v_x*k_ix + v_y*k_iy + v_z*k_iz) * R_h + \
+                (h_ix*k_x + h_iy*k_y + h_iz*k_z) * (h_x*k_ix + h_y*k_iy + h_z*k_iz) * R_v)
+    f_hv = C * ((h_ix*k_x + h_iy*k_y + h_iz*k_z) * (v_x*k_ix + v_y*k_iy + v_z*k_iz) * R_h - \
+                (v_ix*k_x + v_iy*k_y + v_iz*k_z) * (h_x*k_ix + h_y*k_iy + h_z*k_iz) * R_v)
+
+    # Vertical incidence
+    f_vv = C * ((v_ix*k_x + v_iy*k_y + v_iz*k_z) * (v_x*k_ix + v_y*k_iy + v_z*k_iz) * R_v + \
+                (h_ix*k_x + h_iy*k_y + h_iz*k_z) * (h_x*k_ix + h_y*k_iy + h_z*k_iz) * R_h)
+    f_vh = C * (-(h_ix*k_x + h_iy*k_y + h_iz*k_z) * (v_x*k_ix + v_y*k_iy + v_z*k_iz) * R_v + \
+                (v_ix*k_x + v_iy*k_y + v_iz*k_z) * (h_x*k_ix + h_y*k_iy + h_z*k_iz) * R_h)
+
+    return {'horizontal': (f_hh, f_hv), 'vertical': (f_vv, f_vh)}
+
+
+def transmited_amplitudes(wave_vectors, t_vectors, polarization, fresnel_coeff):
+    """L. Tsang, J. A. Kong, 'Scattering of Electromagnetic Waves Vol. 3: 
+    Advanced Topics', Wiley-Interscience, 2001, page 66, eqs. 2.1.131."""
+
+    # Unpack vectors
+    k_ix, k_iy, k_iz, k = wave_vectors['incident']
+    k_tx, k_ty, k_tz, kt = t_vectors
+
+    # Unpack global polarization
+    incident_pol, _, transmited_pol = polarization
+
+    h_ix, h_iy, h_iz = incident_pol['horizontal']
+    v_ix, v_iy, v_iz = incident_pol['vertical']    
+
+    h_tx, h_ty, h_tz = transmited_pol['horizontal']
+    v_tx, v_ty, v_tz = transmited_pol['vertical']
+
+    # Local Fresnel coefficients
+    R_h = fresnel_coeff['horizontal']
+    R_v = fresnel_coeff['vertical']
+
+    # Surface slopes on MSP
+    gamma_x, gamma_y = slopes(wave_vectors)
+
+    # Surface normal unitary vector
+    n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
+    nx, ny, nz = -gamma_x/n_mod, -gamma_y/n_mod, 1/n_mod
+
+    # Prefactor
+    mod_ki_x_kt = (k_iy*k_tz - k_iz*k_ty)**2 + (k_iz*k_tx - k_ix*k_tz)**2 + (k_ix*k_ty - k_iy*k_tx)**2 
+    C = np.sqrt((k_x - k_ix)**2 + (k_y - k_iy)**2 + (k_z - k_iz)**2) * (nx*k_tx + ny*k_ty + nz*k_tz) * 2 * kt \
+        / (mod_ki_x_kt*(k_tz - k_iz))
+
+    # Horizontal incidence
+    ft_hh = C * ((v_ix*k_tx + v_iy*k_ty + v_iz*k_tz) * (v_tx*k_ix + v_ty*k_iy + v_tz*k_iz) * (1 + R_h) + \
+                (h_ix*k_tx + h_iy*k_ty + h_iz*k_tz) * (h_tx*k_ix + h_ty*k_iy + h_tz*k_iz) * (k/kt) *(1 + R_v))
+    ft_hv = C * (-(h_ix*k_tx + h_iy*k_ty + h_iz*k_tz) * (v_tx*k_ix + v_ty*k_iy + v_tz*k_iz) * (1 + R_h) + \
+                (v_ix*k_tx + v_iy*k_ty + v_iz*k_tz) * (h_tx*k_ix + h_ty*k_iy + h_tz*k_iz) * (k/kt) * (1 + R_v))
+
+    # Vertical incidence
+    ft_vv = C * ((v_ix*k_tx + v_iy*k_ty + v_iz*k_tz) * (v_tx*k_ix + v_ty*k_iy + v_tz*k_iz) * (k/kt) * (1 + R_v) + \
+                (h_ix*k_tx + h_iy*k_ty + h_iz*k_tz) * (h_tx*k_ix + h_ty*k_iy + h_tz*k_iz) * (1 + R_h))
+    ft_vh = C * (-(h_ix*k_tx + h_iy*k_ty + h_iz*k_tz) * (v_tx*k_ix + v_ty*k_iy + v_tz*k_iz) * (k/kt) * (1 + R_v) + \
+                (v_ix*k_tx + v_iy*k_ty + v_iz*k_tz) * (h_tx*k_ix + h_ty*k_iy + h_tz*k_iz) * (1 + R_h))
+
+    return {'horizontal': (ft_hh, ft_hv), 'vertical': (ft_vv, ft_vh)}    
+
+# Revisar condiciones y transmitidos
+def shadowing(theta_i, phi_inc, theta, phi, rms_high, corr_len):
     # Define some operations
-    v_a = lambda x : corr_len*abs(np.cot(x))/2/rms_high
-    lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a/np.sqrt(np.pi) - erfc(v_a(x))/2
+    v_a = lambda x : corr_len*abs(1/np.tan(x))/2/rms_high
+    lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a(x)/np.sqrt(np.pi) - erfc(v_a(x))/2
     
     # Define different shadowing functions
     S1 = 1/(1 + lambda_fun(theta_i))
@@ -196,13 +325,13 @@ def shadowing(theta_i, phi_inc, theta, phi):
     S3 = 1/(1 + lambda_fun(theta_i) + lambda_fun(theta))
 
     # Vectorized conditional
-    S = np.where((phi == phi_inc + np.pi and theta >= theta_i), S1, S3)
-    S = np.where((phi == phi_inc + np.pi and theta < theta_i), S2, S)
+    S = np.where((phi == phi_inc + np.pi) & (theta >= theta_i), S1, S3)
+    S = np.where((phi == phi_inc + np.pi) & (theta < theta_i), S2, S)
 
     return S
 
 
-def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
+def sigma(wave_vectors, p_slope, amplitudes, shadow):
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
     k_x, k_y, k_z = wave_vectors['reflected']
@@ -212,15 +341,68 @@ def sigma(wave_vectors, p_slope, amplitudes, shadow=False):
     f_vv, f_vh = amplitudes['vertical']
  
     # Shadowing function
-    S = shadowing() if shadow else 1
+    S = 1 if shadow is None else shadow
 
     # Scattering Cross Section 
-    sigma = {f'{pol}':-k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
+    #sigma = {f'{pol}': -k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
+    #in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
+    sigma = {f'{pol}': -k*np.pi*abs(f)**2*p_slope*S/(k_z - k_iz)**2/k_iz for pol, f 
     in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
 
     return sigma 
 
 
+def sigma_t(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow):
+    # Unpack vectors
+    k_ix, k_iy, k_iz, k = wave_vectors['incident']
+    k_tx, k_ty, k_tz, kt = transmited_vectors 
+
+    # Unpack Amplitudes
+    ft_hh, ft_hv = amplitudes['horizontal']
+    ft_vv, ft_vh = amplitudes['vertical']
+ 
+    # Shadowing function
+    S = 1 if shadow is None else shadow
+
+    # Scattering Cross Section 
+    #sigma = {f'{pol}': -k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
+    #in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
+    sigma_t = {f'{pol}': -kt*np.pi*abs(f)**2*p_slope*S/(k_tz - k_iz)**2/k_iz for pol, f 
+    in zip(['hh', 'hv', 'vv', 'vh'], [ft_hh, ft_hv, ft_vh, ft_vv])}
+
+    return sigma_t
+
+# Revisar inntegral
+def energy(sigma, sigma_t):
+    # Initialize domain of integration
+    THETA, PHI = np.meshgrid(
+        np.linspace(1e-5, 89, 30) * np.pi /
+        180, np.linspace(0, 360, 30) * np.pi / 180
+    )
+
+    THETA_T, PHI_T = np.meshgrid(
+        np.linspace(1e-5, 89, 30) * np.pi /
+        180, np.linspace(0, 360, 30) * np.pi / 180
+    )
+
+    # Horizontally refracted wave
+    r_h = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma[pol]))
+               for pol in ['hh', 'vh']])
+
+    t_h = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
+               for pol in ['hh', 'vh']])
+
+    # Vertically refracted wave
+    r_v = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma[pol]))
+               for pol in ['hv', 'vv']])
+
+    t_v = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
+               for pol in ['hv', 'vv']])
+
+    return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
+
+
 def four_fold_integration(theta_i, wave_vectors, p_slope, amplitudes):
     pass
+
 
