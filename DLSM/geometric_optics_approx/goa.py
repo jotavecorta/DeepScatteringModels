@@ -249,7 +249,7 @@ def alternative_amplitudes(wave_vectors, polarization, fresnel_coeff):
 
     # Prefactor
     mod_ki_x_ks = (k_iy*k_z - k_iz*k_y)**2 + (k_iz*k_x - k_ix*k_z)**2 + (k_ix*k_y - k_iy*k_x)**2 
-    C = ((k_x - k_ix)**2 + (k_y - k_iy)**2 + (k_z - k_iz)**2)/(mod_ki_x_ks*(k_z - k_iz)*k)
+    C = k*((k_x - k_ix)**2 + (k_y - k_iy)**2 + (k_z - k_iz)**2)/(mod_ki_x_ks*(k_z - k_iz))
 
     # Horizontal incidence
     f_hh = C * ((v_ix*k_x + v_iy*k_y + v_iz*k_z) * (v_x*k_ix + v_y*k_iy + v_z*k_iz) * R_h + \
@@ -344,10 +344,8 @@ def sigma(wave_vectors, p_slope, amplitudes, shadow):
     S = 1 if shadow is None else shadow
 
     # Scattering Cross Section 
-    #sigma = {f'{pol}': -k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
-    #in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
     sigma = {f'{pol}': -k*np.pi*abs(f)**2*p_slope*S/(k_z - k_iz)**2/k_iz for pol, f 
-    in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
+    in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vv, f_vh])}
 
     return sigma 
 
@@ -404,5 +402,4 @@ def energy(sigma, sigma_t):
 
 def four_fold_integration(theta_i, wave_vectors, p_slope, amplitudes):
     pass
-
 
