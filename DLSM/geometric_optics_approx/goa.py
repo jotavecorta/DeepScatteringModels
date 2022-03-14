@@ -314,21 +314,29 @@ def transmited_amplitudes(wave_vectors, t_vectors, polarization, fresnel_coeff):
     return {'horizontal': (ft_hh, ft_hv), 'vertical': (ft_vv, ft_vh)}    
 
 
-def shadowing(theta_i, phi_inc, theta, phi, rms_high, corr_len):
+def shadowing(theta_inc, phi_inc, theta, phi, rms_high, corr_len):
     # Define some operations
     v_a = lambda x : corr_len*abs(1/np.tan(x))/2/rms_high
     lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a(x)/np.sqrt(np.pi) - erfc(v_a(x))/2
     
     # Define different shadowing functions
     S1 = 1/(1 + lambda_fun(theta))
-    S2 = 1/(1 + lambda_fun(theta_i))
-    S3 = 1/(1 + lambda_fun(theta_i) + lambda_fun(theta))
+    S2 = 1/(1 + lambda_fun(theta_inc))
+    S3 = 1/(1 + lambda_fun(theta_inc) + lambda_fun(theta))
 
     # Vectorized conditional
-    S = np.where((phi == phi_inc + np.pi) & (theta >= theta_i), S1, S3)
-    S = np.where((phi == phi_inc + np.pi) & (theta < theta_i), S2, S)
+    S = np.where((phi == phi_inc + np.pi) & (theta >= theta_inc), S1, S3)
+    S = np.where((phi == phi_inc + np.pi) & (theta < theta_inc), S2, S)
 
     return S
+
+
+def transmited_shadowing(theta_t, theta, rms_high, corr_len):
+    # Define some operations
+    v_a = lambda x : corr_len*abs(1/np.tan(x))/2/rms_high
+    lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a(x)/np.sqrt(np.pi) - erfc(v_a(x))/2
+
+    return 1/(1 + lambda_fun(theta_t) + lambda_fun(theta))
 
 
 def sigma(wave_vectors, p_slope, amplitudes, shadow):
@@ -350,7 +358,7 @@ def sigma(wave_vectors, p_slope, amplitudes, shadow):
     return sigma 
 
 
-def sigma_t(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow):
+def transmited_sigma(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow_t):
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
     k_tx, k_ty, k_tz, kt = transmited_vectors 
@@ -360,7 +368,7 @@ def sigma_t(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow):
     ft_vv, ft_vh = amplitudes['vertical']
  
     # Shadowing function
-    S = 1 if shadow is None else shadow
+    S = 1 if shadow_t is None else shadow_t
 
     # Scattering Cross Section 
     sigma_t = {f'{pol}': -kt*np.pi*abs(f)**2*p_slope*S/(k_tz - k_iz)**2/k_iz for pol, f 
@@ -368,7 +376,7 @@ def sigma_t(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow):
 
     return sigma_t
 
-# Revisar inntegral
+
 def energy(sigma, sigma_t):
     # Initialize domain of integration
     THETA, PHI = np.meshgrid(
@@ -382,10 +390,10 @@ def energy(sigma, sigma_t):
     )
 
     # Horizontally refracted wave
-    r_h = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma[pol]))
+    r_h = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma[pol]))
                for pol in ['hh', 'vh']])
 
-    t_h = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
+    t_h = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
                for pol in ['hh', 'vh']])
 
     # Vertically refracted wave
@@ -397,7 +405,4 @@ def energy(sigma, sigma_t):
 
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
 
-
-def four_fold_integration(theta_i, wave_vectors, p_slope, amplitudes):
-    pass
 
