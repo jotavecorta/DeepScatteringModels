@@ -313,15 +313,15 @@ def transmited_amplitudes(wave_vectors, t_vectors, polarization, fresnel_coeff):
 
     return {'horizontal': (ft_hh, ft_hv), 'vertical': (ft_vv, ft_vh)}    
 
-# Revisar condiciones y transmitidos
+
 def shadowing(theta_i, phi_inc, theta, phi, rms_high, corr_len):
     # Define some operations
     v_a = lambda x : corr_len*abs(1/np.tan(x))/2/rms_high
     lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a(x)/np.sqrt(np.pi) - erfc(v_a(x))/2
     
     # Define different shadowing functions
-    S1 = 1/(1 + lambda_fun(theta_i))
-    S2 = 1/(1 + lambda_fun(theta))
+    S1 = 1/(1 + lambda_fun(theta))
+    S2 = 1/(1 + lambda_fun(theta_i))
     S3 = 1/(1 + lambda_fun(theta_i) + lambda_fun(theta))
 
     # Vectorized conditional
@@ -363,10 +363,8 @@ def sigma_t(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow):
     S = 1 if shadow is None else shadow
 
     # Scattering Cross Section 
-    #sigma = {f'{pol}': -k**3/k_iz*abs(f)**2*p_slope*S/(k_z - k_iz)**2 for pol, f 
-    #in zip(['hh', 'hv', 'vv', 'vh'], [f_hh, f_hv, f_vh, f_vv])}
     sigma_t = {f'{pol}': -kt*np.pi*abs(f)**2*p_slope*S/(k_tz - k_iz)**2/k_iz for pol, f 
-    in zip(['hh', 'hv', 'vv', 'vh'], [ft_hh, ft_hv, ft_vh, ft_vv])}
+    in zip(['hh', 'hv', 'vv', 'vh'], [ft_hh, ft_hv, ft_vv, ft_vh])}
 
     return sigma_t
 
