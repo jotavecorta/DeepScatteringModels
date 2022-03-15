@@ -425,10 +425,10 @@ def energy(sigma, sigma_t):
                for pol in ['hh', 'vh']])
 
     # Vertically refracted wave
-    r_v = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma[pol]))
+    r_v = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma[pol]))
                for pol in ['hv', 'vv']])
 
-    t_v = sum([np.pi*np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
+    t_v = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
                for pol in ['hv', 'vv']])
 
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
