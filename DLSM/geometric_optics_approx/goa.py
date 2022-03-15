@@ -70,7 +70,20 @@ def slopes_prob_density(wave_vectors, rms_high, corr_len, transmited=False):
     # Calculate variance
     sigma_sqr = 4*rms_high**2/corr_len**2
     
-    return np.exp(-(gamma_x**2 + gamma_y**2)/sigma_sqr)/sigma_sqr/np.pi
+    # Probability density function for reflected case
+    pdf = {'reflected': np.exp(-(gamma_x**2 + gamma_y**2) /
+                             sigma_sqr)/sigma_sqr/np.pi}
+
+    if transmited:
+        # Slopes for transmited case
+        gamma_tx, gamma_ty = slopes(wave_vectors, transmited=transmited)[
+            'transmited']
+
+        # Probability density function for transmited case
+        pdf.update({'transmited': np.exp(-(gamma_tx**2 + gamma_ty**2) /
+                             sigma_sqr)/sigma_sqr/np.pi})
+
+    return pdf
 
 
 def local_fresnel_coefficients(wave_vectors, epsilon):
@@ -250,7 +263,7 @@ def alternative_amplitudes(wave_vectors, polarization, fresnel_coeff):
     k_x, k_y, k_z = wave_vectors['reflected']
 
     # Unpack global polarization
-    incident_pol, scattered_pol = polarization
+    incident_pol, scattered_pol = polarization[:2]
 
     h_ix, h_iy, h_iz = incident_pol['horizontal']
     v_ix, v_iy, v_iz = incident_pol['vertical']    
@@ -303,7 +316,7 @@ def transmited_amplitudes(wave_vectors, polarization, fresnel_coeff):
     R_v = fresnel_coeff['vertical']
 
     # Surface slopes on MSP
-    gamma_x, gamma_y = slopes(wave_vectors)
+    gamma_x, gamma_y = slopes(wave_vectors, transmited=True)['transmited']
 
     # Surface normal unitary vector
     n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
@@ -311,7 +324,7 @@ def transmited_amplitudes(wave_vectors, polarization, fresnel_coeff):
 
     # Prefactor
     mod_ki_x_kt = (k_iy*k_tz - k_iz*k_ty)**2 + (k_iz*k_tx - k_ix*k_tz)**2 + (k_ix*k_ty - k_iy*k_tx)**2 
-    C = np.sqrt((k_x - k_ix)**2 + (k_y - k_iy)**2 + (k_z - k_iz)**2) * (nx*k_tx + ny*k_ty + nz*k_tz) * 2 * kt \
+    C = np.sqrt((k_tx - k_ix)**2 + (k_ty - k_iy)**2 + (k_tz - k_iz)**2) * (nx*k_tx + ny*k_ty + nz*k_tz) * 2 * kt \
         / (mod_ki_x_kt*(k_tz - k_iz))
 
     # Horizontal incidence

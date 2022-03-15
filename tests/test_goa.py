@@ -187,3 +187,36 @@ def test_global_polarization(theta_inc, phi_inc, theta, phi):
     # Check Unitary
     assert_allclose(h_x ** 2 + h_y ** 2 + h_z ** 2, 1)
     assert_allclose(v_x ** 2 + v_y ** 2 + v_z ** 2, 1)
+
+
+@pytest.mark.parametrize(
+    "theta_inc, phi_inc, theta, phi, transmited, theta_t, phi_t",
+    [
+        pytest.param(
+            45 * np.pi / 180, 0, 30 * np.pi / 180, 30 * np.pi / 180,
+            True, 30 * np.pi / 180, 30 * np.pi / 180, id="Scalar"
+        ),
+        pytest.param(30 * np.pi / 180, 30 * np.pi / 180, THETA,
+                     PHI, True, THETA, PHI, id="vectorized"),
+    ],
+)
+def test_transmited_polarization(theta_inc, phi_inc, theta, phi, transmited, theta_t, phi_t):
+
+    # Unpack global polarization
+    incident_pol, scattered_pol, transmited_pol = goa.global_polarization_vectors(
+        theta_inc, phi_inc, THETA, PHI,
+        transmited=transmited, theta_t=theta_t, phi_t=phi_t
+    )
+
+    h_tx, h_ty, h_tz = transmited_pol["horizontal"]
+    v_tx, v_ty, v_tz = transmited_pol["vertical"]
+
+    # Scalar products
+    ht_dot_vt = h_tx * v_tx + h_ty * v_ty + h_tz * v_tz
+
+    # Check perpendicular components
+    assert_allclose(ht_dot_vt, 0, atol=1e-8)
+
+    # Check Unitary
+    assert_allclose(h_tx ** 2 + h_ty ** 2 + h_tz ** 2, 1)
+    assert_allclose(v_tx ** 2 + v_ty ** 2 + v_tz ** 2, 1)
