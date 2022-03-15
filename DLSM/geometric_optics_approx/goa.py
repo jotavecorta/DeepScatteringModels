@@ -4,11 +4,13 @@ developed based on the equations from L. Tsang, J. A. Kong, 'Scattering of
 Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2.
 All the second order KA functions were developed based on the equations
 from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
-
+#%%
 import numpy as np
 from scipy.special import erfc
 
-def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
+
+def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon,
+                 transmited=False, theta_t=None, phi_t=None):
     # Incident Wave
     k = 2*np.pi/lambda_inc
     k_ix = k*np.sin(theta_inc)*np.cos(phi_inc)
@@ -23,21 +25,23 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon):
     # Pack vectors
     vectors = {'reflected': (k_x, k_y, k_z), 
                'incident': (k_ix, k_iy, k_iz, k)} 
+    
+    if transmited:
+        assert (theta_t is not None) and (
+            phi_t is not None), 'theta_t and phi_t must have not null input' \
+                                'value for transmited wave vector'
+        # Transmited wave
+        kt = np.sqrt(epsilon)*k
+        k_tx = kt*np.sin(theta_t)*np.cos(phi_t)
+        k_ty = kt*np.sin(theta_t)*np.sin(phi_t)
+        k_tz = -kt*np.cos(theta_t)   
+
+        vectors.update({'transmited': (k_tx, k_ty, k_tz, kt)})        
 
     return vectors     
 
 
-def transmited_vectors(theta_t, phi_t, epsilon):
-    # Transmited wave
-    kt = np.sqrt(epsilon)*k
-    k_tx = kt*np.sin(theta_t)*np.cos(phi_t)
-    k_ty = kt*np.sin(theta_t)*np.sin(phi_t)
-    k_tz = -kt*np.cos(theta_t)  
-
-    return (k_tx, k_ty, k_tz, kt)
-
-
-def slopes(wave_vectors):
+def slopes(wave_vectors, transmited=False):
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
     k_x, k_y, k_z = wave_vectors['reflected']
@@ -45,12 +49,23 @@ def slopes(wave_vectors):
     # Difference Wave Vector components
     k_dx, k_dy, k_dz = k_x - k_ix, k_y - k_iy, k_z - k_iz 
 
-    return -k_dx/k_dz, -k_dy/k_dz           
+    slope = {'reflected': (-k_dx/k_dz, -k_dy/k_dz)}
+
+    if transmited:
+        k_tx, k_ty, k_tz, k_t = wave_vectors['transmited']
+
+        # Difference
+        k_tdx, k_tdy, k_tdz = k_tx - k_ix, k_ty - k_iy, k_tz - k_iz 
+
+        # Transmited case slopes
+        slope.update({'transmited': (-k_tdx/k_tdz, -k_tdy/k_tdz)})
+
+    return slope           
 
 
-def slopes_prob_density(wave_vectors, rms_high, corr_len):
+def slopes_prob_density(wave_vectors, rms_high, corr_len, transmited=False):
     # Unpack MSP slopes
-    gamma_x, gamma_y = slopes(wave_vectors)
+    gamma_x, gamma_y = slopes(wave_vectors)['reflected']
 
     # Calculate variance
     sigma_sqr = 4*rms_high**2/corr_len**2
@@ -63,7 +78,7 @@ def local_fresnel_coefficients(wave_vectors, epsilon):
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
 
     # Surface slopes on MSP
-    gamma_x, gamma_y = slopes(wave_vectors)
+    gamma_x, gamma_y = slopes(wave_vectors)['reflected']
 
     # Normal Vector module
     n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
@@ -86,7 +101,7 @@ def local_polarization_vectors(wave_vectors):
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
 
     # Surface slopes on MSP
-    gamma_x, gamma_y = slopes(wave_vectors)
+    gamma_x, gamma_y = slopes(wave_vectors)['reflected']
 
     # Surface normal unitary vector
     n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
@@ -266,13 +281,13 @@ def alternative_amplitudes(wave_vectors, polarization, fresnel_coeff):
     return {'horizontal': (f_hh, f_hv), 'vertical': (f_vv, f_vh)}
 
 
-def transmited_amplitudes(wave_vectors, t_vectors, polarization, fresnel_coeff):
+def transmited_amplitudes(wave_vectors, polarization, fresnel_coeff):
     """L. Tsang, J. A. Kong, 'Scattering of Electromagnetic Waves Vol. 3: 
     Advanced Topics', Wiley-Interscience, 2001, page 66, eqs. 2.1.131."""
 
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
-    k_tx, k_ty, k_tz, kt = t_vectors
+    k_tx, k_ty, k_tz, kt = wave_vectors['transmited']
 
     # Unpack global polarization
     incident_pol, _, transmited_pol = polarization
@@ -358,10 +373,10 @@ def sigma(wave_vectors, p_slope, amplitudes, shadow):
     return sigma 
 
 
-def transmited_sigma(wave_vectors, transmited_vectors, p_slope, amplitudes, shadow_t):
+def transmited_sigma(wave_vectors, p_slope, amplitudes, shadow_t):
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
-    k_tx, k_ty, k_tz, kt = transmited_vectors 
+    k_tx, k_ty, k_tz, kt = wave_vectors['transmited']
 
     # Unpack Amplitudes
     ft_hh, ft_hv = amplitudes['horizontal']
@@ -406,3 +421,5 @@ def energy(sigma, sigma_t):
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
 
 
+
+# %%

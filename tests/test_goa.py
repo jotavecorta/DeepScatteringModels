@@ -56,7 +56,7 @@ def test_slopes(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected):
     vectors = goa.wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon)
 
     # Calculate slopes
-    gamma_x, gamma_y = goa.slopes(vectors)
+    gamma_x, gamma_y = goa.slopes(vectors)['reflected']
 
     assert all([isinstance(gamma, expected) for gamma in (gamma_x, gamma_y)])
     assert all(
@@ -80,7 +80,7 @@ def test_fresnell(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected)
     k_ix, k_iy, k_iz, k = vectors["incident"]
 
     # Surface slopes on MSP
-    gamma_x, gamma_y = goa.slopes(vectors)
+    gamma_x, gamma_y = goa.slopes(vectors)['reflected']
 
     # Normal Vector module
     n_mod = np.sqrt(1 + gamma_x ** 2 + gamma_y ** 2)
