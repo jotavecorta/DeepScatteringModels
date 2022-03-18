@@ -1,13 +1,12 @@
 """Core script for first order surface scattering calculation module, 
 using Geometric Optics Approximation. All the first order KA functions were 
 developed based on the equations from L. Tsang, J. A. Kong, 'Scattering of 
-Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2.
-All the second order KA functions were developed based on the equations
-from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
-#%%
+Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2."""
+
 import numpy as np
 from scipy.special import erfc
 
+from .integrals import trapezoid_2d
 
 def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon,
                  transmited=False, theta_t=None, phi_t=None):
@@ -412,27 +411,19 @@ def energy(sigma, sigma_t):
         180, np.linspace(0, 360, 30) * np.pi / 180
     )
 
-    THETA_T, PHI_T = np.meshgrid(
-        np.linspace(1e-5, 89, 30) * np.pi /
-        180, np.linspace(0, 360, 30) * np.pi / 180
-    )
-
     # Horizontally refracted wave
-    r_h = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma[pol]))
-               for pol in ['hh', 'vh']])
+    r_h = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
+        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hh', 'vh']])
 
-    t_h = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
-               for pol in ['hh', 'vh']])
+    t_h = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
+        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hh', 'vh']])
 
     # Vertically refracted wave
-    r_v = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma[pol]))
-               for pol in ['hv', 'vv']])
+    r_v = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
+        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hv', 'vv']])
 
-    t_v = sum([1/4 * np.mean(np.mean(np.sin(THETA)*sigma_t[pol]))
-               for pol in ['hv', 'vv']])
+    t_v = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
+        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hv', 'vv']])
 
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
 
-
-
-# %%

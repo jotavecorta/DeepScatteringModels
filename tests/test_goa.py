@@ -9,8 +9,9 @@ import pytest
 
 from DLSM.geometric_optics_approx import goa
 
+
 THETA, PHI = np.meshgrid(
-    np.linspace(1e-5, 60, 30) * np.pi / 180, np.linspace(0, 360, 30) * np.pi / 180
+    np.linspace(1e-5, 90, 30) * np.pi / 180, np.linspace(0, 360, 30) * np.pi / 180
 )
 
 TEST_PARAMETERS = [
@@ -56,7 +57,7 @@ def test_slopes(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected):
     vectors = goa.wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon)
 
     # Calculate slopes
-    gamma_x, gamma_y = goa.slopes(vectors)['reflected']
+    gamma_x, gamma_y = goa.slopes(vectors)["reflected"]
 
     assert all([isinstance(gamma, expected) for gamma in (gamma_x, gamma_y)])
     assert all(
@@ -80,7 +81,7 @@ def test_fresnell(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon, expected)
     k_ix, k_iy, k_iz, k = vectors["incident"]
 
     # Surface slopes on MSP
-    gamma_x, gamma_y = goa.slopes(vectors)['reflected']
+    gamma_x, gamma_y = goa.slopes(vectors)["reflected"]
 
     # Normal Vector module
     n_mod = np.sqrt(1 + gamma_x ** 2 + gamma_y ** 2)
@@ -193,19 +194,40 @@ def test_global_polarization(theta_inc, phi_inc, theta, phi):
     "theta_inc, phi_inc, theta, phi, transmited, theta_t, phi_t",
     [
         pytest.param(
-            45 * np.pi / 180, 0, 30 * np.pi / 180, 30 * np.pi / 180,
-            True, 30 * np.pi / 180, 30 * np.pi / 180, id="Scalar"
+            45 * np.pi / 180,
+            0,
+            30 * np.pi / 180,
+            30 * np.pi / 180,
+            True,
+            30 * np.pi / 180,
+            30 * np.pi / 180,
+            id="Scalar",
         ),
-        pytest.param(30 * np.pi / 180, 30 * np.pi / 180, THETA,
-                     PHI, True, THETA, PHI, id="vectorized"),
+        pytest.param(
+            30 * np.pi / 180,
+            30 * np.pi / 180,
+            THETA,
+            PHI,
+            True,
+            THETA,
+            PHI,
+            id="vectorized",
+        ),
     ],
 )
-def test_transmited_polarization(theta_inc, phi_inc, theta, phi, transmited, theta_t, phi_t):
+def test_transmited_polarization(
+    theta_inc, phi_inc, theta, phi, transmited, theta_t, phi_t
+):
 
     # Unpack global polarization
     incident_pol, scattered_pol, transmited_pol = goa.global_polarization_vectors(
-        theta_inc, phi_inc, THETA, PHI,
-        transmited=transmited, theta_t=theta_t, phi_t=phi_t
+        theta_inc,
+        phi_inc,
+        THETA,
+        PHI,
+        transmited=transmited,
+        theta_t=theta_t,
+        phi_t=phi_t,
     )
 
     h_tx, h_ty, h_tz = transmited_pol["horizontal"]
