@@ -6,12 +6,13 @@ Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2."""
 import numpy as np
 from scipy.special import erfc
 
-from . import integrals 
+from . import integrals
 
 def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon,
-                 transmited=False, theta_t=None, phi_t=None):
+                 transmited=False, theta_t=None, phi_t=None, epsilon_i=1):
+    
     # Incident Wave
-    k = 2*np.pi/lambda_inc
+    k = np.sqrt(epsilon_i)*2*np.pi/lambda_inc
     k_ix = k*np.sin(theta_inc)*np.cos(phi_inc)
     k_iy = k*np.sin(theta_inc)*np.sin(phi_inc)
     k_iz = -k*np.cos(theta_inc)
@@ -27,10 +28,11 @@ def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon,
     
     if transmited:
         assert (theta_t is not None) and (
-            phi_t is not None), 'theta_t and phi_t must have not null input' \
-                                'value for transmited wave vector'
+            phi_t is not None), ('theta_t, phi_t and epsilon must have not '
+            'null input value for transmited wave vector')
+
         # Transmited wave
-        kt = np.sqrt(epsilon)*k
+        kt = np.sqrt(epsilon)/np.sqrt(epsilon_i)*k
         k_tx = kt*np.sin(theta_t)*np.cos(phi_t)
         k_ty = kt*np.sin(theta_t)*np.sin(phi_t)
         k_tz = -kt*np.cos(theta_t)   
