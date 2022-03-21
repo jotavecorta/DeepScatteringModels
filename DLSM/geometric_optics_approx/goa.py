@@ -6,7 +6,7 @@ Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2."""
 import numpy as np
 from scipy.special import erfc
 
-from .integrals import trapezoid_2d
+from . import integrals 
 
 def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon,
                  transmited=False, theta_t=None, phi_t=None):
@@ -412,18 +412,18 @@ def energy(sigma, sigma_t):
     )
 
     # Horizontally refracted wave
-    r_h = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
-        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hh', 'vh']])
+    r_h = sum([integrals.trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
+        th_lim=(1e-5*np.pi/180, 89*np.pi/180)) for pol in ['hh', 'vh']])
 
-    t_h = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
-        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hh', 'vh']])
+    t_h = sum([integrals.trapezoid_2d(np.sin(THETA)*sigma_t[pol]/(4*np.pi),
+        th_lim=(1e-5*np.pi/180, 89*np.pi/180)) for pol in ['hh', 'vh']])
 
     # Vertically refracted wave
-    r_v = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
-        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hv', 'vv']])
+    r_v = sum([integrals.trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
+        th_lim=(1e-5*np.pi/180, 89*np.pi/180)) for pol in ['hv', 'vv']])
 
-    t_v = sum([trapezoid_2d(np.sin(THETA)*sigma[pol]/(4*np.pi),
-        th_lim=(1e-5*pi/180, 89*pi/180)) for pol in ['hv', 'vv']])
+    t_v = sum([integrals.trapezoid_2d(np.sin(THETA)*sigma_t[pol]/(4*np.pi),
+        th_lim=(1e-5*np.pi/180, 89*np.pi/180)) for pol in ['hv', 'vv']])
 
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
 
