@@ -2,11 +2,11 @@
 using Geometric Optics Approximation. All the first order KA functions were 
 developed based on the equations from L. Tsang, J. A. Kong, 'Scattering of 
 Electromagnetic Waves Vol. 3: Advanced Topics', chapter 2."""
-#%%
+
 import numpy as np
 from scipy.special import erfc
 
-import integrals
+from . import integrals
 
 def wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon,
                  transmited=False, theta_t=None, phi_t=None, epsilon_i=1):
@@ -432,4 +432,4 @@ def energy(sigma, sigma_t):
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
 
 
-# %%
+
