@@ -87,12 +87,14 @@ def slopes_prob_density(wave_vectors, rms_high, corr_len, transmited=False):
     return pdf
 
 
-def local_fresnel_coefficients(wave_vectors, epsilon):
+def local_fresnel_coefficients(wave_vectors, epsilon, transmited=False):
     # Unpack incident vectors
     k_ix, k_iy, k_iz, k = wave_vectors['incident']
 
     # Surface slopes on MSP
-    gamma_x, gamma_y = slopes(wave_vectors)['reflected']
+    mode = {True: 'transmited', False: 'reflected'}
+    gamma_x, gamma_y = slopes(wave_vectors, transmited=transmited)[
+        mode[transmited]]
 
     # Normal Vector module
     n_mod = np.sqrt(1 + gamma_x**2 + gamma_y**2) 
@@ -360,12 +362,12 @@ def shadowing(theta_inc, phi_inc, theta, phi, rms_high, corr_len):
     return S
 
 
-def transmited_shadowing(theta_t, theta, rms_high, corr_len):
+def transmited_shadowing(theta_t, theta_i, rms_high, corr_len):
     # Define some operations
     v_a = lambda x : corr_len*abs(1/np.tan(x))/2/rms_high
     lambda_fun = lambda x : np.exp(-v_a(x)**2)/2/v_a(x)/np.sqrt(np.pi) - erfc(v_a(x))/2
 
-    return 1/(1 + lambda_fun(theta_t) + lambda_fun(theta))
+    return 1/(1 + lambda_fun(theta_t) + lambda_fun(theta_i))
 
 
 def sigma(wave_vectors, p_slope, amplitudes, shadow):
@@ -428,4 +430,6 @@ def energy(sigma, sigma_t):
         th_lim=(1e-5*np.pi/180, 89*np.pi/180)) for pol in ['hv', 'vv']])
 
     return {'horizontal': r_h + t_h, 'vertical': r_v + t_v}
+
+
 

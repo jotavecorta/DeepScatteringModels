@@ -9,6 +9,7 @@ from .goa import *
 
 def ray_trace(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, epsilon_2,
               epsilon_i=1):
+
     # Create integration variables
     TH_m, PH_m, TH_p, PH_p = np.meshgrid(
         np.linspace(1e-5, 90, 30) * np.pi / 180,
@@ -18,16 +19,27 @@ def ray_trace(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, epsilon_2,
     )
 
     # First transmition: media 1 --> media 2 (usefull for first reflection too)
-    first_order = wave_vectors(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, 
-    transmited=True, theta_t=TH_m, phi_t=PH_m)
+    first_order = wave_vectors(
+        lambda_inc,
+        theta_inc,
+        phi_inc,
+        theta,
+        phi,
+        epsilon_1,
+        transmited=True,
+        theta_t=TH_m,
+        phi_t=PH_m,
+    )
 
     # Reflection: interface media 2 - media 3
     second_reflection = wave_vectors(
-        lambda_inc, TH_m, PH_m, TH_p, PH_p, epsilon_2, epsilon_i=epsilon_1)
+        lambda_inc, TH_m, PH_m, TH_p, PH_p, epsilon_2, epsilon_i=epsilon_1
+    )
 
     # Second transmition: media 2 --> media 1
     second_transmition = wave_vectors(
-        lambda_inc, TH_p, PH_p, theta, phi, epsilon=epsilon_i, epsilon_i=epsilon_1)
+        lambda_inc, TH_p, PH_p, theta, phi, epsilon=epsilon_i, epsilon_i=epsilon_1
+    )
 
     return first_order, second_reflection, second_transmition
 
@@ -46,16 +58,34 @@ def sigma_2O(fi_vectors, p_slope, amplitudes, shadow):
         lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, epsilon_2
     )
 
-    # Slopes pdf's 
+    # Slopes pdf's
     p_1_2 = slopes_prob_density(vectors_1_2, s_1, l_1, transmited=True)
     p_2_3 = slopes_prob_density(vectors_2_3, s_2, l_2)
     p_2_1 = slopes_prob_density(vectors_2_1, s_1, l_1, transmited=True)
-    
+
+    # Global Polarization
+    pol_1_2 = global_polarization_vectors(
+        theta_inc, phi_inc, theta, phi, transmited=True, theta_t=TH_m, phi_t=PH_m
+    )
+    pol_2_3 = global_polarization_vectors(TH_m, PH_m, TH_p, PH_p)
+    pol_1_2 = global_polarization_vectors(
+        TH_p, PH_p, 0, 0, transmited=True, theta_t=theta, phi_t=phi
+    ) # Third reflection doesn´t count
+
+    # Fresnel coeficients
+    fresnel_1_2 = local_fresnel_coefficients(vectors_1_2, epsilon_1)
+    fresnel_2_3 = local_fresnel_coefficients(vectors_2_3, epsilon_2)
+    fresnel_2_1 = local_fresnel_coefficients(vectors_2_1, epsilon_i)
+
     # Reflected and Transmited Amplitudes
     amps_1_2 = transmited_amplitudes(vectors_1_2, pol_1_2, fresnel_1)
     amps_2_3 = alternative_amplitudes(vectors_2_3, pol_2_3, fresnel_2)
     amps_2_1 = transmited_amplitudes(vectors_2_1, pol_2_1, fresnel_1)
-    
+
+    # Shadowing efect
+    S_1_2 = transmited_shadowing(TH_m, theta_i, s_1, l_1)
+    S_2_3 = shadowing(TH_m, PH_m, TH_p, PH_p, s_2, l_2)
+    S_2_1 = transmited_shadowing(TH_p, theta, s_1, l_1)
 
     # Unpack vectors
     k_ix, k_iy, k_iz, k = wave_vectors["incident"]
@@ -66,7 +96,7 @@ def sigma_2O(fi_vectors, p_slope, amplitudes, shadow):
 
     # Scattering Cross Section
     sigma = {
-        f"{pol}": -k * np.pi * abs(f) ** 2 * p_slope * S / (k_z - k_iz) ** 2 / k_iz
+        f"{pol}": -k * np.pi * abs(f)**2 * p_slope * S / (k_z - k_iz)** 2 / k_iz
         for pol, f in zip(["hh", "hv", "vv", "vh"], [f_hh, f_hv, f_vv, f_vh])
     }
 
