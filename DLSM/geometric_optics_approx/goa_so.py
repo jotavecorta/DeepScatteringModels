@@ -1,14 +1,18 @@
 """Core script for first order surface scattering calculation module, 
-using Geometric Optics Approximation. All the second order KA functions were developed based on the equations
-from RADIO SCIENCE, VOL. 46, RS0E20, 2011"""
+using Geometric Optics Approximation. All the second order KA functions were 
+developed based on the equations from N. Pinel, J. T. Johnson, C. Bourlier,
+'A Geometrical Optics Model of Three Dimensional Scattering From A Rough
+Layer With Two Rough Surfaces', IEEE Trans. Antennas Propag., vol 58, no. 3,
+pp. 809-816, 2010. """
 
 import numpy as np
 
 from .goa import *
 
 
-def ray_trace(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, epsilon_2,
-              epsilon_i=1):
+def ray_trace(
+    lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, epsilon_2, epsilon_i=1
+):
 
     # Create integration variables
     TH_m, PH_m, TH_p, PH_p = np.meshgrid(
@@ -70,7 +74,7 @@ def sigma_2O(fi_vectors, p_slope, amplitudes, shadow):
     pol_2_3 = global_polarization_vectors(TH_m, PH_m, TH_p, PH_p)
     pol_1_2 = global_polarization_vectors(
         TH_p, PH_p, 0, 0, transmited=True, theta_t=theta, phi_t=phi
-    ) # Third reflection doesn´t count
+    )  # Third reflection doesn´t count
 
     # Fresnel coeficients
     fresnel_1_2 = local_fresnel_coefficients(vectors_1_2, epsilon_1)
@@ -88,15 +92,42 @@ def sigma_2O(fi_vectors, p_slope, amplitudes, shadow):
     S_2_1 = transmited_shadowing(TH_p, theta, s_1, l_1)
 
     # Unpack vectors
-    k_ix, k_iy, k_iz, k = wave_vectors["incident"]
-    k_x, k_y, k_z = wave_vectors["reflected"]
+    k_ix, k_iy, k_iz, k = vectors_1_2["incident"]
+    k_x, k_y, k_z = vectors_1_2["reflected"]
 
-    # Shadowing function
-    S = 1 if shadow is None else shadow
+    k_mx, k_my, k_mz, kt = vectors_1_2["transmited"]
+    k_px, k_py, k_pz = vectors_2_3["reflected"]
+
+    k_px, k_py, k_pz = vectors_2_1["transmited"]
+
+    # Define auxiliar function
+    denominator = lambda a, b: (a - b) ** 2
+
+    # Amplitudes product
+    f_hh = (
+        amps_1_2["horizontal"][0]
+        * amps_2_3["horizontal"][0]
+        * amps_2_1["horizontal"][0]
+    )
+    f_hv = (
+        amps_1_2["horizontal"][1]
+        * amps_2_3["horizontal"][1]
+        * amps_2_1["horizontal"][1]
+    )
+    f_vv = amps_1_2["vertical"][0] * amps_2_3["vertical"][0] * amps_2_1["vertical"][0]
+    f_vh = amps_1_2["vertical"][1] * amps_2_3["vertical"][1] * amps_2_1["vertical"][1]
 
     # Scattering Cross Section
+    p = p_1_2["transmited"] * p_2_3["reflected"] * p_2_1["transmited"]
+    S = S_1_2 * S_2_3 * S_2_1
+    d = (
+        denominator(k_mz / kt, k_iz / k_t)
+        * denominator(k_pz / k_t, k_mz / k_t)
+        * denominator(k_z / k, k_pz / k)
+    )
+
     sigma = {
-        f"{pol}": -k * np.pi * abs(f)**2 * p_slope * S / (k_z - k_iz)** 2 / k_iz
+        f"{pol}": -k / k_iz * abs(f) ** 2 * p * S / d
         for pol, f in zip(["hh", "hv", "vv", "vh"], [f_hh, f_hv, f_vv, f_vh])
     }
 
