@@ -48,7 +48,7 @@ def ray_trace(
     return first_order, second_reflection, second_transmition
 
 
-def sigma_2O(fi_vectors, p_slope, amplitudes, shadow):
+def sigma_2O(lambda_inc, theta_inc, phi_inc, theta, phi, epsilon_1, epsilon_2):
     # Create integration variables
     TH_m, PH_m, TH_p, PH_p = np.meshgrid(
         np.linspace(1e-5, 90, 30) * np.pi / 180,
