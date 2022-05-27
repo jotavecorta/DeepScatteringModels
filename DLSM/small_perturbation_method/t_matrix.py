@@ -1,10 +1,10 @@
-#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 All the SPM functions were developed based on the equations from ..."""
 import numpy as np
+from scipy.integrate import simps
 
-from johnson_1999 import alpha1_h, beta1_v
+from johnson_1999 import alpha1_h, aux2_hh, aux2_hv, aux2_vh, aux2_vv, beta1_v
 from spm1 import a1HHF1, a1HVF1, a1VVF1, a1HHF2, a1VVF2, a1HVF2
 from spm1 import w
 
@@ -76,6 +76,49 @@ class SpmSurface:
                     beta1_v(k, theta_inc, phi_inc, theta_s, phi_s, self.ep_1)
                 )
             }
+
+    def _spm2_amplitudes(self, lambda_, theta_inc, phi_inc, n=100, lim=1.5, mode='simpson'):
+        """ """
+        # Set backscattering for scattered angle
+        theta_s, phi_s = theta_inc, phi_inc + np.pi
+
+        # Wave vector norm
+        k = 2*np.pi/lambda_
+
+        # Integration domain
+        kr_x, kr_y = np.meshgrid(np.linspace(-lim*k, lim*k, n),
+                                 np.linspace(-lim*k, lim*k, n))
+
+        if self.two_layer:
+            pass
+        else:
+            # scattering amplitudes
+            # Co-pol
+            alpha1_h = aux2_hh(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                               phi_s, self.ep_1, self.s_1, self.l_1)
+
+            beta1_v = aux2_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                              phi_s, self.ep_1, self.s_1, self.l_1)
+
+            # Cross-pol
+            alpha1_v = aux2_hv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                               phi_s, self.ep_1, self.s_1, self.l_1)
+
+            beta1_h = aux2_vh(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                              phi_s, self.ep_1, self.s_1, self.l_1)
+
+            return {
+                'co-pol': (
+                    simps(simps(alpha1_h.T, kr_y), kr_x),
+                    simps(simps(beta1_v.T, kr_y), kr_x)
+                ),
+                'cross-pol': (
+                    simps(simps(alpha1_v.T, kr_y), kr_x),
+                    simps(simps(beta1_h.T, kr_y), kr_x)
+                )
+            }
+       
+
 
     def t_matrix(self, lambda_, theta_inc, phi_inc):
 
@@ -160,4 +203,3 @@ class SpmSurface:
 
             return np.array([(t_11, t_12), (t_21, t_22)])
 
-# %%
