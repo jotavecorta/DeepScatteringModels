@@ -663,3 +663,74 @@ def aux2_hv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
         )
     )
 
+## HH*VV
+def aux2_hh_vv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
+    return (
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
+        * (
+            alpha2_h(krx, kry, ki, th, ph, ths, phs, ep) *
+            np.conj(beta2_v(krx, kry, ki, th, ph, ths, phs, ep))
+            + alpha2_h(krx, kry, ki, th, ph, ths, phs, ep)
+            * np.conj(
+                beta2_v(
+                    kix(ki, th, ph) + ksx(ki, ths, phs) - krx,
+                    kiy(ki, th, ph) + ksy(ki, ths, phs) - kry,
+                    ki,
+                    th,
+                    ph,
+                    ths,
+                    phs,
+                    ep,
+                )
+            )
+        )
+    ) 
+
+## HV*VV
+def aux2_hv_vv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
+    return (
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
+        * (
+            beta2_v(krx, kry, ki, th, ph, ths, phs, ep) *
+            np.conj(alpha2_v(krx, kry, ki, th, ph, ths, phs, ep))
+            + beta2_v(krx, kry, ki, th, ph, ths, phs, ep)
+            * np.conj(
+                alpha2_v(
+                    kix(ki, th, ph) + ksx(ki, ths, phs) - krx,
+                    kiy(ki, th, ph) + ksy(ki, ths, phs) - kry,
+                    ki,
+                    th,
+                    ph,
+                    ths,
+                    phs,
+                    ep,
+                )
+            )
+        )
+    ) 
+
+## HV*HH
+def aux2_hv_hh(krx, kry, ki, th, ph, ths, phs, ep, s, l):
+    return (
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
+        * (
+            alpha2_h(krx, kry, ki, th, ph, ths, phs, ep) *
+            np.conj(alpha2_v(krx, kry, ki, th, ph, ths, phs, ep))
+            + alpha2_h(krx, kry, ki, th, ph, ths, phs, ep)
+            * np.conj(
+                alpha2_v(
+                    kix(ki, th, ph) + ksx(ki, ths, phs) - krx,
+                    kiy(ki, th, ph) + ksy(ki, ths, phs) - kry,
+                    ki,
+                    th,
+                    ph,
+                    ths,
+                    phs,
+                    ep,
+                )
+            )
+        )
+    )    

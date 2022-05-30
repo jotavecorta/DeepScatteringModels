@@ -413,7 +413,7 @@ def w(acf,s,l,k1,k2):
 # correlación entre las superficies
 
 def w_f1f2(s1,l1,s2,l2,k1,k2):
-    return 0*s1*s2*l1*l2/(4*np.pi)*np.exp(-0.125*(l1**2+l2**2)*(k1**2+k2**2))
+    return s1*s2*l1*l2/(4*np.pi)*np.exp(-0.125*(l1**2+l2**2)*(k1**2+k2**2))
 
 # def W_f1f2(s1,s2,l1,l2,k1,k2):
 #     return s1*s2*l1*l2/(4*np.pi**2*(1+l1**2*(k1**2+k2**2))**(3/4)*(1+l2**2*(k1**2+k2**2))**(3/4))
