@@ -39,6 +39,7 @@ class SpmSurface:
         self.ep_2 = epsilon_2
         self.d = distance
 
+
     def _auxiliar_vectors(self, lambda_, theta_inc, phi_inc):
         """Return K_1 and K_2 vectors for PSD calculation.
         
@@ -65,6 +66,7 @@ class SpmSurface:
                                np.sin(theta_inc)*np.sin(phi_inc))
 
         return k_1, k_2
+
 
     def _spm1_amplitudes(self, lambda_, theta_inc, phi_inc):
         """Returns integrated SPM first order amplitudes for one or 
@@ -119,8 +121,9 @@ class SpmSurface:
                 )
             }
 
+
     def _spm2_amplitudes(self, lambda_, theta_inc, phi_inc, n=100, lim=1.5):
-        """Returns integrated SPM second order amplitudes pounded 
+        """Returns SPM second order amplitudes pounded 
         with respective PSD for one or two layer random rough surface.
 
         Parameters
@@ -140,9 +143,9 @@ class SpmSurface:
         Returns
         -------
         dict         
-            Cross and Co-pol integrated scattering amplitudes.
+            Cross and Co-pol scattering amplitudes.
 
-        """
+        """        
         # Set backscattering for scattered angle
         theta_s, phi_s = theta_inc, phi_inc + np.pi
 
@@ -153,42 +156,164 @@ class SpmSurface:
         kr_x, kr_y = np.meshgrid(np.linspace(-lim*k, lim*k, n),
                                  np.linspace(-lim*k, lim*k, n))
 
+        # Wave vector components
+        k_x, k_y = np.sin(theta_inc) * \
+            np.cos(phi_inc), np.sin(theta_inc)*np.sin(phi_inc)
+
+        k_sx, k_sy = np.sin(theta_s) * \
+            np.cos(phi_s), np.sin(theta_s)*np.cos(phi_s)
+
+        # scattering amplitudes
         if self.two_layer:
-            pass
-        else:
-            # scattering amplitudes
+            W_1 = w(self.s_1, self.l_1, k_sx - kr_x, k_sy - kr_y, self.acf) * \
+                w(self.s_1, self.l_1, kr_x - k_x, kr_y - k_y, self.acf)
+
+            W_2 = w(self.s_2, self.l_2, k_sx - kr_x, k_sy - kr_y, self.acf) * \
+                w(self.s_2, self.l_2, kr_x - k_x, kr_y - k_y, self.acf)
+
             # Co-pol
-            alpha1_h = aux2_hh(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
-                               phi_s, self.ep_1, self.s_1, self.l_1)
+            S_hh = W_1 * (
+                abs(L1_11HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))**2 +
+                L1_11HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11HH(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))) + \
+                W_2 * (
+                    abs(L1_22HH(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))**2 +
+                    L1_22HH(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22HH(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s,
+                                    theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))
+            )
 
-            beta1_v = aux2_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
-                              phi_s, self.ep_1, self.s_1, self.l_1)
+            S_vv = W_1 * (
+                abs(L1_11VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))**2 +
+                L1_11VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11VV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))) + \
+                W_2 * (
+                    abs(L1_22VV(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))**2 +
+                    L1_22VV(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22VV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s,
+                                    theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))
+            )
 
-            alpha_h_beta_v = aux2__hh_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
-                                         phi_s, self.ep_1, self.s_1, self.l_1)
+            S_hh_S_vv = W_1 * (
+                L1_11HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d)) +
+                L1_11HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11VV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))) + \
+                W_2 * (
+                    L1_22HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d)) +
+                    L1_22HH(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22VV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s,
+                                    theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))
+            )
+
+            #Cross-pol
+            S_hv = W_1 * (
+                abs(L1_11HV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))**2 +
+                L1_11HV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11HV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))) + \
+                W_2 * (
+                    abs(L1_22HV(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))**2 +
+                    L1_22HV(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22HV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s,
+                                    theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))
+            )
+
+            S_hh_S_hv = W_1 * (
+                L1_11HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11HV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d)) +
+                L1_11HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11HV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))) + \
+                W_2 * (
+                    L1_22HH(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22HV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d)) +
+                    L1_22HH(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22HV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s,
+                                    theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))
+            )
+
+            S_vv_S_hv = W_1 * (
+                L1_11VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11HV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d)) +
+                L1_11VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                np.conj(L1_11HV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))) + \
+                W_2 * (
+                    L1_22VV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22HV(kr_x, kr_y, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d)) +
+                    L1_22VV(kr_x, kr_x, k, theta_s, phi_s, theta_inc, phi_inc, self.ep_1, self.ep_2, self.d) *
+                    np.conj(L1_22HV(k_x - kr_x, k_y - kr_y, k, theta_s, phi_s,
+                                    theta_inc, phi_inc, self.ep_1, self.ep_2, self.d))
+            )
+
+        else:
+            # Co-pol
+            S_hh = aux2_hh(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                           phi_s, self.ep_1, self.s_1, self.l_1)
+
+            S_vv = aux2_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                           phi_s, self.ep_1, self.s_1, self.l_1)
+
+            S_hh_S_vv = aux2__hh_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                                    phi_s, self.ep_1, self.s_1, self.l_1)
 
             # Cross-pol
-            alpha1_v = aux2_hv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
-                               phi_s, self.ep_1, self.s_1, self.l_1)
+            S_hv = aux2_hv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                           phi_s, self.ep_1, self.s_1, self.l_1)
 
-            alpha1_hv = aux2_hv_hh(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+            S_hh_S_hv = aux2_hv_hh(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
                                    phi_s, self.ep_1, self.s_1, self.l_1)
 
-            beta1_hv = aux2_hv_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
-                                  phi_s, self.ep_1, self.s_1, self.l_1)
+            S_vv_S_hv = aux2_hv_vv(kr_x, kr_y, k, theta_inc, phi_inc, theta_s,
+                                   phi_s, self.ep_1, self.s_1, self.l_1)
 
-            return {
-                'co-pol': (
-                    simps(simps(alpha1_h.T, kr_y), kr_x),
-                    simps(simps(beta1_v.T, kr_y), kr_x),
-                    simps(simps(alpha_h_beta_v.T, kr_y), kr_x)
-                ),
-                'cross-pol': (
-                    simps(simps(alpha1_v.T, kr_y), kr_x),
-                    simps(simps(alpha1_hv.T, kr_y), kr_x),
-                    simps(simps(beta1_hv.T, kr_y), kr_x)
-                )
-            }
+        return {
+            'co-pol': (S_hh, S_vv, S_hh_S_vv),
+            'cross-pol': (S_hv, S_hh_S_hv, S_vv_S_hv)
+        }
+
+
+    def _spm2_two_point(self, lambda_, theta_inc, phi_inc, **kwargs):
+        """Returns integrated SPM second order amplitudes pounded 
+        with respective PSD for one or two layer random rough surface.
+
+        Parameters
+        ----------
+        lambda_ : float          
+            Incident wavelength.
+        theta_inc : float         
+            Incident azimut angle in radians.
+        phi_inc : float        
+            Incident azimut polar in radians.
+        kwargs: 
+            self._spm2_amplitudes integration kwargs
+
+        Returns
+        -------
+        dict         
+            Cross and Co-pol integrated scattering amplitudes.
+
+        """
+        # Wave vector norm
+        k = 2*np.pi/lambda_
+
+        # Scattering amplitudes
+        amps_dict = self._spm2_amplitudes(lambda_, theta_inc, phi_inc, **kwargs)
+        
+        S_hh, S_vv, S_hh_S_vv = amps_dict['co-pol']
+        S_hv, S_hh_S_hv, S_vv_S_hv = amps_dict['cross-pol']
+
+        return {
+            'co-pol': (
+                simps(simps(S_hh.T, kr_y), kr_x),
+                simps(simps(S_vv.T, kr_y), kr_x),
+                simps(simps(S_hh_S_vv.T, kr_y), kr_x)
+            ),
+            'cross-pol': (
+                simps(simps(S_hv.T, kr_y), kr_x),
+                simps(simps(S_hh_S_hv.T, kr_y), kr_x),
+                simps(simps(S_vv_S_hv.T, kr_y), kr_x)
+            )
+        }
        
 
     def _t_matrix_coeficients(self, lambda_, theta_inc, phi_inc):
@@ -214,7 +339,6 @@ class SpmSurface:
         k_1, k_2 = self._auxiliar_vectors(lambda_, theta_inc, phi_inc)
 
         # First layer Gaussian Power Spectrum Density
-        acf = 1
         W = w(self.acf, self.s_1, self.l_1, k_1, k_2)
 
         if self.two_layer:
@@ -331,7 +455,7 @@ class SpmSurface:
 
         # Add second order terms
         if second_order:
-            amps_dict = self._spm2_amplitudes(lambda_, theta_inc, phi_inc, **kwargs)
+            amps_dict = self._spm2_two_point(lambda_, theta_inc, phi_inc, **kwargs)
 
             # Unpack amplitudes
             s_hh, s_vv, s_hh_vv = amps_dict['co-pol']
