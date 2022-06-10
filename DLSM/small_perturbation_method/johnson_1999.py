@@ -643,7 +643,7 @@ def aux2_vh(krx, kry, ki, th, ph, ths, phs, ep, s, l):
 ## HV
 def aux2_hv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
     return (
-        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy(ki, th, ph))
         * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
         * (
             abs(alpha2_v(krx, kry, ki, th, ph, ths, phs, ep)) ** 2
@@ -666,7 +666,7 @@ def aux2_hv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
 ## HH*VV
 def aux2_hh_vv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
     return (
-        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy(ki, th, ph))
         * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
         * (
             alpha2_h(krx, kry, ki, th, ph, ths, phs, ep) *
@@ -690,7 +690,7 @@ def aux2_hh_vv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
 ## HV*VV
 def aux2_hv_vv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
     return (
-        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy(ki, th, ph))
         * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
         * (
             beta2_v(krx, kry, ki, th, ph, ths, phs, ep) *
@@ -714,7 +714,7 @@ def aux2_hv_vv(krx, kry, ki, th, ph, ths, phs, ep, s, l):
 ## HV*HH
 def aux2_hv_hh(krx, kry, ki, th, ph, ths, phs, ep, s, l):
     return (
-        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy)
+        w_gauss(s, l, krx - kix(ki, th, ph), kry - kiy(ki, th, ph))
         * w_gauss(s, l, ksx(ki, ths, phs) - krx, ksy(ki, ths, phs) - kry)
         * (
             alpha2_h(krx, kry, ki, th, ph, ths, phs, ep) *
