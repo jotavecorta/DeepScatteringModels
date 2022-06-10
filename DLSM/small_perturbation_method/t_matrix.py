@@ -15,6 +15,7 @@ from scipy.integrate import simps
 from johnson_1999 import alpha1_h, aux2_hh, aux2_hv, aux2_vh, aux2_vv, beta1_v
 from spm1 import a1HHF1, a1HVF1, a1VVF1, a1HHF2, a1VVF2, a1HVF2
 from spm1 import w
+from spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
 
 
 class SpmSurface:
@@ -165,11 +166,11 @@ class SpmSurface:
 
         # scattering amplitudes
         if self.two_layer:
-            W_1 = w(self.s_1, self.l_1, k_sx - kr_x, k_sy - kr_y, self.acf) * \
-                w(self.s_1, self.l_1, kr_x - k_x, kr_y - k_y, self.acf)
+            W_1 = w(self.acf, self.s_1, self.l_1, k_sx - kr_x, k_sy - kr_y) * \
+                w(self.acf, self.s_1, self.l_1, kr_x - k_x, kr_y - k_y)
 
-            W_2 = w(self.s_2, self.l_2, k_sx - kr_x, k_sy - kr_y, self.acf) * \
-                w(self.s_2, self.l_2, kr_x - k_x, kr_y - k_y, self.acf)
+            W_2 = w(self.acf, self.s_2, self.l_2, k_sx - kr_x, k_sy - kr_y) * \
+                w(self.acf, self.s_2, self.l_2, kr_x - k_x, kr_y - k_y)
 
             # Co-pol
             S_hh = W_1 * (
@@ -272,7 +273,7 @@ class SpmSurface:
         }
 
 
-    def _spm2_two_point(self, lambda_, theta_inc, phi_inc, **kwargs):
+    def _spm2_two_point(self, lambda_, theta_inc, phi_inc, n=100, lim=1.5):
         """Returns integrated SPM second order amplitudes pounded 
         with respective PSD for one or two layer random rough surface.
 
@@ -297,11 +298,16 @@ class SpmSurface:
         k = 2*np.pi/lambda_
 
         # Scattering amplitudes
-        amps_dict = self._spm2_amplitudes(lambda_, theta_inc, phi_inc, **kwargs)
+        amps_dict = self._spm2_amplitudes(lambda_, theta_inc, phi_inc, n, lim)
         
         S_hh, S_vv, S_hh_S_vv = amps_dict['co-pol']
         S_hv, S_hh_S_hv, S_vv_S_hv = amps_dict['cross-pol']
 
+        # Integration domain
+        kr_x, kr_y = (
+            np.linspace(-lim*k, lim*k, n), np.linspace(-lim*k, lim*k, n)
+            )
+        
         return {
             'co-pol': (
                 simps(simps(S_hh.T, kr_y), kr_x),
@@ -487,4 +493,4 @@ class SpmSurface:
                                   (t_21, t_22, t_23), 
                                   (t_21, t_22, t_23)])
 
-        return t_matrix                          
+        return t_matrix                                                 
