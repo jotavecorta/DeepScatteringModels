@@ -13,10 +13,10 @@ import numpy as np
 from scipy.integrate import simps
 
 from johnson_1999 import alpha1_h, alpha2_h, alpha2_v, beta1_v, beta2_v
-from johnson_1999 import aux2_hh, aux2_hv, aux2_hh_vv, aux2_hv_hh, aux2_hv_vv, aux2_vv
 from spm1 import a1HHF1, a1HVF1, a1VVF1, a1HHF2, a1VVF2, a1HVF2
 from spm1 import w
-from spm2 import L0_11HH, L0_11HV, L0_11VH, L0_11VV, L0_22HH, L0_22HV, L0_22VV, L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
+from spm2 import L0_11HH, L0_11HV, L0_11VH, L0_11VV, L0_22HH, L0_22HV, L0_22VV
+from spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
 
 
 class SpmSurface:
@@ -586,5 +586,6 @@ class SpmSurface:
                                   (t_31, t_32, t_33)])
 
         return t_matrix
+
 
 # %%
