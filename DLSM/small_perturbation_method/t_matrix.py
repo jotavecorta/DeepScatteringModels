@@ -587,5 +587,3 @@ class SpmSurface:
 
         return t_matrix
 
-
-# %%
