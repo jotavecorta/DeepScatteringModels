@@ -1,3 +1,4 @@
+#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 
@@ -588,6 +589,27 @@ class SpmSurface:
         return t_matrix
 
     def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **kwargs):
+        """Returns Mueller Matrix for one or two layer random rough surface
+        scattering in SPM approximation, up to second order.
+
+        Parameters
+        ----------
+        lambda_ : float        
+            Incident wavelength.
+        theta_inc : float         
+            Incident azimut angle in radians.
+        phi_inc : float        
+            Incident azimut polar in radians.
+        second_order: bool         
+            If true calculations are made up to second 
+            order in SPM approximation.
+
+        Returns
+        -------
+        m_matrix : ``numpy.ndarray``      
+            Cross and Co-pol integrated scattering amplitudes.
+
+        """
         s_matrix_dict = self._spm1_s_matrix(lambda_, theta_inc, phi_inc)
 
         # Unpack amplitudes
@@ -612,40 +634,40 @@ class SpmSurface:
             s_vv_hv += s2_vv_hv
         
         # Upper Triangle
-        m_11 = s_hh + s_vv + 2 * s_hv
+        m_11 = 1/2 * (s_hh + s_vv + 2 * s_hv)
 
-        m_12 = s_hh - s_vv
+        m_12 = 1/2 * (s_hh - s_vv)
         
-        m_13 = 2 * np.real(s_hh_hv + s_vv_hv)
+        m_13 = np.real(s_hh_hv + np.conj(s_vv_hv))
 
-        m_14 = 2j * np.imag(s_hh_hv - s_vv_hv)
+        m_14 = np.imag(s_hh_hv + np.conj(s_vv_hv))
         
-        m_22 = s_hh + s_vv - 2 * s_hv
+        m_22 = 1/2 * (s_hh + s_vv - 2 * s_hv)
         
-        m_23 = 2 * np.real(s_hh_hv - s_vv_hv)
+        m_23 = np.real(s_hh_hv - np.conj(s_vv_hv))
 
-        m_24 = 2j * np.imag(s_hh_hv + s_vv_hv)
+        m_24 = np.imag(s_hh_hv - np.conj(s_vv_hv))
         
-        m_33 = 2 * (s_hv + np.real(s_hh_vv))
+        m_33 = (s_hv + np.real(s_hh_vv))
 
-        m_34 = 2j * np.imag(s_hh_vv)
+        m_34 = np.imag(s_hh_vv)
 
-        m_44 = 2 * (s_hv - np.real(s_hh_vv))                
+        m_44 = (-s_hv + np.real(s_hh_vv))                
 
         # Lower Triangle
         m_21 = m_12
 
         m_31, m_32 = m_13, m_23
 
-        m_41 = m_14
+        m_41 = - m_14
 
-        m_42, m_43 = m_24, m_34
+        m_42, m_43 = -m_24, -m_34
 
         # Mueller Matrix
         m_matrix = np.array([(m_11, m_12, m_13, m_14),
-                                (m_21, m_22, m_23, m_24),
-                                (m_31, m_32, m_33, m_34),
-                                (m_41, m_42, m_43, m_44)])
+                             (m_21, m_22, m_23, m_24),
+                             (m_31, m_32, m_33, m_34),
+                             (m_41, m_42, m_43, m_44)])
 
         return m_matrix
 
@@ -684,3 +706,5 @@ class SpmSurface:
         return sigma     
 
 
+
+# %%
