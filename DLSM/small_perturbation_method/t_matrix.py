@@ -587,67 +587,100 @@ class SpmSurface:
 
         return t_matrix
 
-        def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **kwargs):
-            s_matrix_dict = self._spm1_s_matrix(lambda_, theta_inc, phi_inc)
+    def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **kwargs):
+        s_matrix_dict = self._spm1_s_matrix(lambda_, theta_inc, phi_inc)
+
+        # Unpack amplitudes
+        s_hh, s_vv, s_hh_vv = s_matrix_dict['co-pol']
+        s_hv, s_hh_hv, s_vv_hv = s_matrix_dict['cross-pol']
+
+        # Second order
+        if second_order:
+            amps_dict = self._spm2_integration(
+                lambda_, theta_inc, phi_inc, **kwargs)
 
             # Unpack amplitudes
-            s_hh, s_vv, s_hh_vv = s_matrix_dict['co-pol']
-            s_hv, s_hh_hv, s_vv_hv = s_matrix_dict['cross-pol']
+            s2_hh, s2_vv, s2_hh_vv = amps_dict['co-pol']
+            s2_hv, s2_hh_hv, s2_vv_hv = amps_dict['cross-pol']
 
-            # Second order
-            if second_order:
-                amps_dict = self._spm2_integration(
-                    lambda_, theta_inc, phi_inc, **kwargs)
+            # Add second order terms
+            s_hh += s2_hh
+            s_vv += s2_vv
+            s_hh_vv += s2_hh_vv
+            s_hv += s2_hv
+            s_hh_hv += s2_hh_hv
+            s_vv_hv += s2_vv_hv
+        
+        # Upper Triangle
+        m_11 = s_hh + s_vv + 2 * s_hv
 
-                # Unpack amplitudes
-                s2_hh, s2_vv, s2_hh_vv = amps_dict['co-pol']
-                s2_hv, s2_hh_hv, s2_vv_hv = amps_dict['cross-pol']
+        m_12 = s_hh - s_vv
+        
+        m_13 = 2 * np.real(s_hh_hv + s_vv_hv)
 
-                # Add second order terms
-                s_hh += s2_hh
-                s_vv += s2_vv
-                s_hh_vv += s2_hh_vv
-                s_hv += s2_hv
-                s_hh_hv += s2_hh_hv
-                s_vv_hv += s2_vv_hv
-           
-            # Upper Triangle
-            m_11 = s_hh + s_vv + 2 * s_hv
+        m_14 = 2j * np.imag(s_hh_hv - s_vv_hv)
+        
+        m_22 = s_hh + s_vv - 2 * s_hv
+        
+        m_23 = 2 * np.real(s_hh_hv - s_vv_hv)
 
-            m_12 = s_hh - s_vv
-            
-            m_13 = 2 * np.real(s_hh_hv + s_vv_hv)
+        m_24 = 2j * np.imag(s_hh_hv + s_vv_hv)
+        
+        m_33 = 2 * (s_hv + np.real(s_hh_vv))
 
-            m_14 = 2j * np.imag(s_hh_hv - s_vv_hv)
-            
-            m_22 = s_hh + s_vv - 2 * s_hv
-            
-            m_23 = 2 * np.real(s_hh_hv - s_vv_hv)
+        m_34 = 2j * np.imag(s_hh_vv)
 
-            m_24 = 2j * np.imag(s_hh_hv + s_vv_hv)
-            
-            m_33 = 2 * (s_hv + np.real(s_hh_vv))
+        m_44 = 2 * (s_hv - np.real(s_hh_vv))                
 
-            m_34 = 2j * np.imag(s_hh_vv)
+        # Lower Triangle
+        m_21 = m_12
 
-            m_44 = 2 * (s_hv - np.real(s_hh_vv))                
+        m_31, m_32 = m_13, m_23
 
-            # Lower Triangle
-            m_21 = m_12
+        m_41 = m_14
 
-            m_31, m_32 = m_13, m_23
+        m_42, m_43 = m_24, m_34
 
-            m_41 = m_14
+        # Mueller Matrix
+        m_matrix = np.array([(m_11, m_12, m_13, m_14),
+                                (m_21, m_22, m_23, m_24),
+                                (m_31, m_32, m_33, m_34),
+                                (m_41, m_42, m_43, m_44)])
 
-            m_42, m_43 = m_24, m_34
+        return m_matrix
 
-            # Mueller Matrix
-            m_matrix = np.array([(m_11, m_12, m_13, m_14),
-                          (m_21, m_22, m_23, m_24),
-                          (m_31, m_32, m_33, m_34),
-                          (m_41, m_42, m_43, m_44)])
+    def polarization_signature(self, lambda_, theta_inc, phi_inc, grid_size = (90, 45), second_order=True, **kwargs):
+        # Incident wave vector 
+        k = 2*np.pi/lambda_
+        
+        # Mueller matrix
+        m_matrix = self.mueller_matrix(
+            lambda_, theta_inc, phi_inc, second_order=second_order, **kwargs
+        )
 
-            return m_matrix
+        # Grid Size
+        n_psi, n_chi = grid_size
 
-        def polarization_signature(self, lambda_, theta_inc, phi_inc, second_order=True, **kwargs):
-            pass
+        # Orientation and ellipticity angles
+        psi = np.linspace(0, 180, n_psi) * np.pi/180
+        chi = np.linspace(-45, 45, n_chi) * np.pi/180
+
+        PSI, CHI = np.meshgrid(psi, chi)
+
+        # Rotation Vectors
+        R = np.array([[np.ones(CHI.shape)], 
+                        [np.cos(2*CHI) * np.cos(2*PSI)],
+                        [np.cos(2*CHI) * np.sin(2*PSI)],
+                        [np.sin(2*CHI)]])
+
+        # Polarization signature
+        M_dot_R = np.einsum('ij, jklm -> iklm', m_matrix, R)
+        dot_product = np.einsum(
+            'kilm, iklm -> lm', np.transpose(R, (1, 0, 2, 3)), M_dot_R
+            )
+
+        sigma = 4 * np.pi/k**2 * dot_product  
+
+        return sigma     
+
+
