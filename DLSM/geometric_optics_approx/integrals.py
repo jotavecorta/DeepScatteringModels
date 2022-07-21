@@ -25,6 +25,5 @@ def trapezoid_2d(integrand, th_lim=(0, np.pi / 2), ph_lim=(0, 2 * np.pi)):
 
     return integral
 
-
 def four_fold_integration():
     pass
