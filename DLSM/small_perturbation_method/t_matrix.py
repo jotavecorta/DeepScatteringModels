@@ -1,4 +1,3 @@
-#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 
@@ -23,7 +22,7 @@ from spm2 import L1_12HH, L1_12HV, L1_12VV
 
 class SpmSurface:
     """ Generates a one, or two, layer random rough surface with specified 
-    statistics. SPM methods such as T-Matrix availables for backscattering
+    statistics. SPM methods such as T-Matrix are availables for backscattering
     angle.
     """
 
@@ -58,16 +57,16 @@ class SpmSurface:
         
         Parameters
         ----------
-        lambda_ : float         
+        lambda_ : ``float``         
             Incident wavelength.
-        theta_inc : float       
+        theta_inc : ``float``       
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
+        phi_inc : ``float``        
+            Incident polar angle in radians.
 
         Returns
         -------
-        tuple       
+        ``tuple``       
             x and y components of k_s - k_i.
         
         """
@@ -86,16 +85,16 @@ class SpmSurface:
 
         Parameters
         ----------
-        lambda_ : float         
+        lambda_ : ``float``         
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
+        phi_inc : ``float``        
+            Incident polar angle in radians.
 
         Returns
         -------
-        dict         
+        ``dict``         
             Cross and Co-pol scattering amplitudes.
             
         """
@@ -149,20 +148,20 @@ class SpmSurface:
 
         Parameters
         ----------
-        lambda_ : float          
+        lambda_ : ``float``          
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
-        int_argument : tuple
+        phi_inc : ``float``        
+            Incident polar angle in radians.
+        int_argument : ``tuple``
             (x, y) where:
-                x, ``numpy.array`` first argument of L1_11 fuctions
-                y, ``numpy.array`` second argument of L1_11 fuctions 
+                - x, ``numpy.array`` first argument of L1_11 fuctions
+                - y, ``numpy.array`` second argument of L1_11 fuctions 
 
         Returns
         -------
-        dict         
+        ``dict``         
             Each layer Cross and Co-pol scattering amplitudes.
 
         """
@@ -259,16 +258,16 @@ class SpmSurface:
 
         Parameters
         ----------
-        lambda_ : float          
+        lambda_ : ``float``          
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
+        phi_inc : ``float``        
+            Incident polar angle in radians.
 
         Returns
         -------
-        dict         
+        ``dict``         
             Cross and Co-pol scattering amplitudes.
 
         """
@@ -337,21 +336,21 @@ class SpmSurface:
 
         Parameters
         ----------
-        lambda_ : float          
+        lambda_ : ``float``          
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
-        n : int, default=101         
+        phi_inc : ``float``        
+            Incident polar angle in radians.
+        n : ``int``, default: 100         
             Number of points for integration variables.
-        lim : float, default=1.5         
+        lim : ``float``, default: 1.5         
             Cut-off wavenumber for 2D integration, in 
             incident wavenumber units.
 
         Returns
         -------
-        dict         
+        ``dict``         
             Cross and Co-pol scattering amplitudes.
 
         """
@@ -463,18 +462,21 @@ class SpmSurface:
 
         Parameters
         ----------
-        lambda_ : float          
+        lambda_ : ``float``          
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
-        kwargs: 
-            self._spm2_amplitudes integration kwargs
+        phi_inc : ``float``        
+            Incident polar angle in radians.
+        n : ``int``, default: 100         
+            Number of points for integration variables.
+        lim : ``float``, default: 1.5         
+            Cut-off wavenumber for 2D integration, in 
+            incident wavenumber units.
 
         Returns
         -------
-        dict         
+        ``dict``         
             Cross and Co-pol integrated scattering amplitudes.
 
         """
@@ -511,12 +513,12 @@ class SpmSurface:
 
         Parameters
         ----------
-        lambda_ : float        
+        lambda_ : ``float``        
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
+        phi_inc : ``float``        
+            Incident polar angle in radians.
 
         Returns
         -------
@@ -558,21 +560,24 @@ class SpmSurface:
 
         return t_matrix
 
-    def t_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **kwargs):
+    def t_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **int_kw):
         """Returns T-Matrix for one or two layer random rough surface
         scattering in SPM approximation, up to second order.
 
         Parameters
         ----------
-        lambda_ : float        
+        lambda_ : ``float``        
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
-        second_order: bool         
+        phi_inc : ``float``        
+            Incident polar angle in radians.
+        second_order: ``bool``, default: True          
             If true calculations are made up to second 
             order in SPM approximation.
+        **int_kw:
+            All additional keyword arguments are pas to 
+            t_matrix.SpmSurface._spm2_integration call.            
 
         Returns
         -------
@@ -586,7 +591,7 @@ class SpmSurface:
         # Add second order terms
         if second_order:
             amps_dict = self._spm2_integration(
-                lambda_, theta_inc, phi_inc, **kwargs)
+                lambda_, theta_inc, phi_inc, **int_kw)
 
             # Unpack amplitudes
             s_hh, s_vv, s_hh_vv = amps_dict['co-pol']
@@ -620,21 +625,24 @@ class SpmSurface:
 
         return t_matrix
 
-    def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **kwargs):
+    def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **int_kw):
         """Returns Mueller Matrix for one or two layer random rough surface
         scattering in SPM approximation, up to second order.
 
         Parameters
         ----------
-        lambda_ : float        
+        lambda_ : ``float``        
             Incident wavelength.
-        theta_inc : float         
+        theta_inc : ``float``         
             Incident azimut angle in radians.
-        phi_inc : float        
-            Incident azimut polar in radians.
-        second_order: bool         
+        phi_inc : ``float``        
+            Incident polar angle in radians.
+        second_order: ``bool``, default: True          
             If true calculations are made up to second 
             order in SPM approximation.
+        **int_kw:
+            All additional keyword arguments are pas to 
+            t_matrix.SpmSurface._spm2_integration call.
 
         Returns
         -------
@@ -651,7 +659,7 @@ class SpmSurface:
         # Second order
         if second_order:
             amps_dict = self._spm2_integration(
-                lambda_, theta_inc, phi_inc, **kwargs)
+                lambda_, theta_inc, phi_inc, **int_kw)
 
             # Unpack amplitudes
             s2_hh, s2_vv, s2_hh_vv = amps_dict['co-pol']
@@ -703,13 +711,41 @@ class SpmSurface:
 
         return m_matrix
 
-    def polarization_signature(self, lambda_, theta_inc, phi_inc, grid_size = (90, 45), second_order=True, **kwargs):
+    def polarization_signature(self, lambda_, theta_inc, phi_inc, grid_size=(90, 45), second_order=True, **int_kw):
+        """Returns Polarization Signature grid, for one or two layer random rough surface
+        scattering in SPM approximation, up to second order.
+
+        Parameters
+        ----------
+        lambda_ : ``float``        
+            Incident wavelength.
+        theta_inc : ``float``         
+            Incident azimut angle in radians.
+        phi_inc : ``float``        
+            Incident polar angle in radians.
+        second_order : ``bool``, default: True         
+            If true calculations are made up to second 
+            order in SPM approximation.
+        grid_size : ``int tuple``, default: (90, 45) 
+            (a, b) where ::
+                - a, orientation angle length.
+                - b, ellipticity angle length.     
+        **int_kw :
+            All additional keyword arguments are pas to 
+            t_matrix.SpmSurface._spm2_integration call.    
+
+        Returns
+        -------
+        m_matrix : ``numpy.ndarray``      
+            Cross and Co-pol integrated scattering amplitudes.
+
+        """
         # Incident wave vector 
         k = 2*np.pi/lambda_
         
         # Mueller matrix
         m_matrix = self.mueller_matrix(
-            lambda_, theta_inc, phi_inc, second_order=second_order, **kwargs
+            lambda_, theta_inc, phi_inc, second_order=second_order, **int_kw
         )
 
         # Grid Size
@@ -737,4 +773,3 @@ class SpmSurface:
 
         return sigma     
 
-# %%
