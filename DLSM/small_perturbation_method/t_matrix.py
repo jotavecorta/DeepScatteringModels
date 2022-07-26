@@ -1,3 +1,4 @@
+#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 
@@ -10,7 +11,7 @@ All calculations are made for backscattering angle.
 
 """
 import numpy as np
-from scipy.integrate import simps
+from scipy.integrate import simpson
 
 from johnson_1999 import alpha1_h, alpha2_h, alpha2_v, beta1_v, beta2_v
 from spm1 import a1HHF1, a1HVF1, a1VVF1, a1HHF2, a1VVF2, a1HVF2
@@ -342,7 +343,7 @@ class SpmSurface:
             Incident azimut angle in radians.
         phi_inc : float        
             Incident azimut polar in radians.
-        n : int, default=100         
+        n : int, default=101         
             Number of points for integration variables.
         lim : float, default=1.5         
             Cut-off wavenumber for 2D integration, in 
@@ -371,6 +372,7 @@ class SpmSurface:
         k_sx, k_sy = np.sin(theta_s) * \
             np.cos(phi_s), np.sin(theta_s)*np.cos(phi_s)
 
+
         # Unpack amplitudes first layer
         # First term (evaluated on k')
         amps = self._spm2_amplitudes(lambda_, theta_inc, phi_inc, (kr_x, kr_y))
@@ -388,6 +390,7 @@ class SpmSurface:
         # First layer Power Spectrum Density
         W_1 = w(self.acf, self.s_1, self.l_1, k_sx - kr_x, k_sy - kr_y) * \
             w(self.acf, self.s_1, self.l_1, kr_x - k_x, kr_y - k_y)
+
 
         # S matrix
         # Co-pol
@@ -419,29 +422,35 @@ class SpmSurface:
             f12_hh_st, f12_vv_st = amps_st['interaction']['co-pol']
             f12_hv_st = amps_st['interaction']['cross-pol']
 
+
             # Second layer Power Spectrum Density
             W_2 = w(self.acf, self.s_2, self.l_2, k_sx - kr_x, k_sy - kr_y) * \
                 w(self.acf, self.s_2, self.l_2, kr_x - k_x, kr_y - k_y)
 
-            # Co-pol
-            S_hh += W_2 * (abs(f2_hh)**2 + f2_hh * np.conj(f2_hh_st) +
-                           abs(f12_hh)**2 + f12_hh * np.conj(f12_hh_st))
+            # Interaction Power Spectrum Density
+            W_12 = w(self.acf, self.s_1, self.l_1, k_sx - kr_x, k_sy - kr_y) * \
+                w(self.acf, self.s_2, self.l_2, kr_x - k_x, kr_y - k_y)
 
-            S_vv += W_2 * (abs(f2_vv)**2 + f2_vv * np.conj(f2_vv_st) +
-                           abs(f12_vv)**2 + f12_vv * np.conj(f12_vv_st))
 
-            S_hh_S_vv += W_2 * (f2_hh * np.conj(f2_vv) + f2_hh * np.conj(f2_vv_st) +
-                                f12_hh * np.conj(f12_vv) + f12_hh * np.conj(f12_vv_st))
+            # Co-pol Elements
+            S_hh += W_2 * (abs(f2_hh)**2 + f2_hh * np.conj(f2_hh_st)) + \
+                    W_12 * (abs(f12_hh)**2 + f12_hh * np.conj(f12_hh_st))
 
-            #Cross-pol
-            S_hv += W_2 * (abs(f2_hv)**2 + f2_hv * np.conj(f2_hv_st) +
-                           abs(f12_hv)**2 + f12_hv * np.conj(f12_hv_st))
+            S_vv += W_2 * (abs(f2_vv)**2 + f2_vv * np.conj(f2_vv_st)) + \
+                    W_12 * (abs(f12_vv)**2 + f12_vv * np.conj(f12_vv_st))
 
-            S_hh_S_hv += W_2 * (f2_hh * np.conj(f2_hv) + f2_hh * np.conj(f2_hv_st) +
-                                f12_hh * np.conj(f12_hv) + f12_hh * np.conj(f12_hv_st))
+            S_hh_S_vv += W_2 * (f2_hh * np.conj(f2_vv) + f2_hh * np.conj(f2_vv_st)) + \
+                         W_12 * (f12_hh * np.conj(f12_vv) + f12_hh * np.conj(f12_vv_st))
 
-            S_vv_S_hv += W_2 * (f2_vv * np.conj(f2_hv) + f2_vv * np.conj(f2_hv_st) +
-                                f12_vv * np.conj(f12_hv) + f12_vv * np.conj(f12_hv_st))
+            # Cross-pol Elements
+            S_hv += W_2 * (abs(f2_hv)**2 + f2_hv * np.conj(f2_hv_st)) + \
+                    W_12 * (abs(f12_hv)**2 + f12_hv * np.conj(f12_hv_st))
+
+            S_hh_S_hv += W_2 * (f2_hh * np.conj(f2_hv) + f2_hh * np.conj(f2_hv_st)) + \
+                         W_12 * (f12_hh * np.conj(f12_hv) + f12_hh * np.conj(f12_hv_st))
+
+            S_vv_S_hv += W_2 * (f2_vv * np.conj(f2_hv) + f2_vv * np.conj(f2_hv_st)) + \
+                         W_12 * (f12_vv * np.conj(f12_hv) + f12_vv * np.conj(f12_hv_st))
 
         return {
             'co-pol': (S_hh, S_vv, S_hh_S_vv),
@@ -485,14 +494,14 @@ class SpmSurface:
 
         return {
             'co-pol': (
-                simps(simps(S_hh.T, kr_y), kr_x),
-                simps(simps(S_vv.T, kr_y), kr_x),
-                simps(simps(S_hh_S_vv.T, kr_y), kr_x)
+                simpson(simpson(S_hh.T, kr_y), kr_x),
+                simpson(simpson(S_vv.T, kr_y), kr_x),
+                simpson(simpson(S_hh_S_vv.T, kr_y), kr_x)
             ),
             'cross-pol': (
-                simps(simps(S_hv.T, kr_y), kr_x),
-                simps(simps(S_hh_S_hv.T, kr_y), kr_x),
-                simps(simps(S_vv_S_hv.T, kr_y), kr_x)
+                simpson(simpson(S_hv.T, kr_y), kr_x),
+                simpson(simpson(S_hh_S_hv.T, kr_y), kr_x),
+                simpson(simpson(S_vv_S_hv.T, kr_y), kr_x)
             )
         }
 
@@ -727,3 +736,5 @@ class SpmSurface:
         sigma = 4 * np.pi/k**2 * dot_product  
 
         return sigma     
+
+# %%
