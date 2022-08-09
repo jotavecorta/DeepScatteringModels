@@ -585,6 +585,9 @@ class SpmSurface:
             Cross and Co-pol integrated scattering amplitudes.
 
         """
+        # Incident wave number
+        k = 2 * np.pi / lambda_ 
+
         # First order calculation
         t_matrix = self._t_matrix_first_order(lambda_, theta_inc, phi_inc)
 
@@ -619,11 +622,12 @@ class SpmSurface:
             t_32 = np.conj(t_23)
 
             # Add terms to first order T-Matrix
-            t_matrix += np.array([(t_11, t_12, t_13),
-                                  (t_21, t_22, t_23),
-                                  (t_31, t_32, t_33)])
+            t_matrix += (np.array([(t_11, t_12, t_13),
+                                   (t_21, t_22, t_23),
+                                   (t_31, t_32, t_33)])
+                         )
 
-        return t_matrix
+        return k**2 * np.cos(theta_inc)**2 * t_matrix
 
     def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **int_kw):
         """Returns Mueller Matrix for one or two layer random rough surface
@@ -649,7 +653,17 @@ class SpmSurface:
         m_matrix : ``numpy.ndarray``      
             Cross and Co-pol integrated scattering amplitudes.
 
+        Reference
+        ---------
+        F.T. Ulaby, K. Sarabandi, A. Nashashibi, "Statistical properties off
+        the mueller matrix off distributed targets", IEE Proceedings F (Radar and Signal Processing), 
+        Volume 139, Issue 2, pp. 136-146, April 1992.
+
         """
+        # Incident wave number
+        k = 2 * np.pi / lambda_ 
+
+        # First order calculation 
         s_matrix_dict = self._spm1_s_matrix(lambda_, theta_inc, phi_inc)
 
         # Unpack amplitudes
@@ -704,12 +718,13 @@ class SpmSurface:
         m_42, m_43 = -m_24, -m_34
 
         # Mueller Matrix
-        m_matrix = np.array([(m_11, m_12, m_13, m_14),
-                             (m_21, m_22, m_23, m_24),
-                             (m_31, m_32, m_33, m_34),
-                             (m_41, m_42, m_43, m_44)])
+        m_matrix = (np.array([(m_11, m_12, m_13, m_14),
+                              (m_21, m_22, m_23, m_24),
+                              (m_31, m_32, m_33, m_34),
+                              (m_41, m_42, m_43, m_44)])
+                    )
 
-        return m_matrix
+        return k**2 * np.cos(theta_inc)**2 * m_matrix
 
     def polarization_signature(self, lambda_, theta_inc, phi_inc, grid_size=(90, 45), second_order=True, **int_kw):
         """Returns Polarization Signature grid, for one or two layer random rough surface
@@ -731,13 +746,19 @@ class SpmSurface:
                 - a, orientation angle length.
                 - b, ellipticity angle length.     
         **int_kw :
-            All additional keyword arguments are pas to 
+            All additional keyword arguments are pass to 
             t_matrix.SpmSurface._spm2_integration call.    
 
         Returns
         -------
         m_matrix : ``numpy.ndarray``      
             Cross and Co-pol integrated scattering amplitudes.
+
+        Reference
+        ---------
+        J. J. v. Zyl, H. A. Zebker and C. Elachi, "Imaging radar polarization 
+        signatures: Theory and observation," in Radio Science, vol. 22, no. 04, 
+        pp. 529-543, July-Aug. 1987.
 
         """
         # Incident wave vector 
@@ -772,4 +793,3 @@ class SpmSurface:
         sigma = 4 * np.pi/k**2 * dot_product  
 
         return sigma     
-
