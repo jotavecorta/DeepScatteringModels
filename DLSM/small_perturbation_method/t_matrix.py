@@ -572,11 +572,11 @@ class SpmSurface:
             Incident azimut angle in radians.
         phi_inc : ``float``        
             Incident polar angle in radians.
-        second_order: ``bool``, default: True          
+        second_order : ``bool``, default: True          
             If true calculations are made up to second 
             order in SPM approximation.
-        **int_kw:
-            All additional keyword arguments are pas to 
+        **int_kw : `` ``
+            All additional keyword arguments are pass to 
             t_matrix.SpmSurface._spm2_integration call.            
 
         Returns
@@ -637,10 +637,10 @@ class SpmSurface:
             Incident azimut angle in radians.
         phi_inc : ``float``        
             Incident polar angle in radians.
-        second_order: ``bool``, default: True          
+        second_order : ``bool``, default: True          
             If true calculations are made up to second 
             order in SPM approximation.
-        **int_kw:
+        **int_kw : `` ``
             All additional keyword arguments are pas to 
             t_matrix.SpmSurface._spm2_integration call.
 
@@ -730,7 +730,7 @@ class SpmSurface:
             (a, b) where ::
                 - a, orientation angle length.
                 - b, ellipticity angle length.     
-        **int_kw :
+        **int_kw : `` ``
             All additional keyword arguments are pas to 
             t_matrix.SpmSurface._spm2_integration call.    
 
