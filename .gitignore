@@ -60,3 +60,6 @@ venv.bak/
 # Spyder project settings
 .spyderproject
 .spyproject
+
+# Big sized numpy arrays
+*.npy

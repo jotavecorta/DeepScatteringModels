@@ -1,0 +1,7 @@
+{
+    "optimizer": "RMSProp",
+    "learning_rate": 0.0009000000000000001,
+    "init": "normal",
+    "batch_size": 64,
+    "score": 29.00747776031494
+}
