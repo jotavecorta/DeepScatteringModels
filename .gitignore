@@ -30,6 +30,24 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+
 # Sphinx documentation
 docs/_build/
 
@@ -63,3 +81,24 @@ venv.bak/
 
 # Big sized numpy arrays
 *.npy
+
+# Others
+# mypy
+.mypy_cache/
+
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ll]ib64
+[Ll]ocal
+[Ss]cripts
+pyvenv.cfg
+.venv
+pip-selfcheck.json
+.vscode
+share
+tareas.md
+python.md
+maquinas_virtuales.md
+satpytry.py
