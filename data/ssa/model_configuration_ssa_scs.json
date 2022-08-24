@@ -1,7 +1,8 @@
 {
-    "optimizer": "RMSProp",
-    "learning_rate": 0.0009000000000000001,
+    "optimizer": "RMSprop",
+    "learning_rate": 0.0005,
     "init": "normal",
-    "batch_size": 64,
-    "score": 29.00747776031494
+    "batch_size": 32,
+    "decay_type": "polynomial",
+    "final_value": 5e-06
 }
