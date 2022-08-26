@@ -19,9 +19,10 @@ from spm2 import L0_11HH, L0_11HV, L0_11VV, L0_22HH, L0_22HV, L0_22VV
 from spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
 from spm2 import L1_12HH, L1_12HV, L1_12VV
 
+from utils import cwishrnd
 
 class SpmSurface:
-    """ Generates a one, or two, layer random rough surface with specified 
+    """Generates a one, or two, layer random rough surface with specified 
     statistics. SPM methods such as T-Matrix are availables for backscattering
     angle.
     """
@@ -260,7 +261,7 @@ class SpmSurface:
         ----------
         lambda_ : ``float``          
             Incident wavelength.
-        theta_inc : ``float``         
+        theta_inc : ``float``        
             Incident azimut angle in radians.
         phi_inc : ``float``        
             Incident polar angle in radians.
@@ -656,8 +657,8 @@ class SpmSurface:
         Reference
         ---------
         F.T. Ulaby, K. Sarabandi, A. Nashashibi, "Statistical properties off
-        the mueller matrix off distributed targets", IEE Proceedings F (Radar and Signal Processing), 
-        Volume 139, Issue 2, pp. 136-146, April 1992.
+        the mueller matrix of distributed targets", IEEE Proceedings F (Radar
+         and Signal Processing), Volume 139, Issue 2, pp. 136-146, April 1992.
 
         """
         # Incident wave number
@@ -726,7 +727,17 @@ class SpmSurface:
 
         return k**2 * np.cos(theta_inc)**2 * m_matrix
 
-    def polarization_signature(self, lambda_, theta_inc, phi_inc, grid_size=(90, 45), second_order=True, **int_kw):
+    def polarization_signature(
+        self, 
+        lambda_, 
+        theta_inc, 
+        phi_inc, 
+        grid_size=(90, 45), 
+        second_order=True,
+        wishard_noise=False,  
+        **int_kw
+        ):
+
         """Returns Polarization Signature grid, for one or two layer random rough surface
         scattering in SPM approximation, up to second order.
 
@@ -769,6 +780,10 @@ class SpmSurface:
             lambda_, theta_inc, phi_inc, second_order=second_order, **int_kw
         )
 
+        # Add Noise
+        if wishard_noise:
+            m_matrix = cwishrnd(m_matrix)
+
         # Grid Size
         n_psi, n_chi = grid_size
 
@@ -787,7 +802,9 @@ class SpmSurface:
         # Polarization signature
         M_dot_R = np.einsum('ij, jklm -> iklm', m_matrix, R)
         dot_product = np.einsum(
-            'kilm, iklm -> lm', np.transpose(R, (1, 0, 2, 3)), M_dot_R
+            'kilm, iklm -> lm',
+             np.transpose(R, (1, 0, 2, 3)), 
+             M_dot_R
             )
 
         sigma = 4 * np.pi/k**2 * dot_product  
