@@ -657,8 +657,13 @@ class SpmSurface:
         Reference
         ---------
         F.T. Ulaby, K. Sarabandi, A. Nashashibi, "Statistical properties off
-        the mueller matrix of distributed targets", IEEE Proceedings F (Radar
-         and Signal Processing), Volume 139, Issue 2, pp. 136-146, April 1992.
+        the mueller matrix of distributed targets", IEEE Proceedings F (Radar 
+        and Signal Processing), Volume 139, Issue 2, pp. 136-146, April 1992.
+
+        M. Migliaccio et al., "A multi-frequency polarimetric SAR processing 
+        chain to observe oil fields in the Gulf of Mexico", IEEE Transaction 
+        on Geoscience and Remote Sensing, Volume 49, Issue 12, pp. 4729-4737, 
+        2011. 
 
         """
         # Incident wave number
