@@ -728,16 +728,15 @@ class SpmSurface:
         return k**2 * np.cos(theta_inc)**2 * m_matrix
 
     def polarization_signature(
-        self, 
-        lambda_, 
-        theta_inc, 
-        phi_inc, 
-        grid_size=(90, 45), 
+        self,
+        lambda_,
+        theta_inc,
+        phi_inc,
+        grid_size=(90, 45),
         second_order=True,
-        wishard_noise=False,  
+        wishard_noise=False,
         **int_kw
-        ):
-
+    ):
         """Returns Polarization Signature grid, for one or two layer random rough surface
         scattering in SPM approximation, up to second order.
 
@@ -772,9 +771,9 @@ class SpmSurface:
         pp. 529-543, July-Aug. 1987.
 
         """
-        # Incident wave vector 
+        # Incident wave vector
         k = 2*np.pi/lambda_
-        
+
         # Mueller matrix
         m_matrix = self.mueller_matrix(
             lambda_, theta_inc, phi_inc, second_order=second_order, **int_kw
