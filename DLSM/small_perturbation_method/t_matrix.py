@@ -759,7 +759,10 @@ class SpmSurface:
         grid_size : ``int tuple``, default: (90, 45) 
             (a, b) where ::
                 - a, orientation angle length.
-                - b, ellipticity angle length.     
+                - b, ellipticity angle length.  
+        wishard_noise :  ``bool``, default: False
+            Add noise with wishard distribution,
+            simulating 15 looks messure.          
         **int_kw :
             All additional keyword arguments are pass to 
             t_matrix.SpmSurface._spm2_integration call.    
