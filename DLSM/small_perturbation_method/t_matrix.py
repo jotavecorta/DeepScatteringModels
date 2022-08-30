@@ -756,7 +756,8 @@ class SpmSurface:
         second_order : ``bool``, default: True         
             If true calculations are made up to second 
             order in SPM approximation.
-        grid_size : ``int tuple``, default: (90, 45) 
+        grid_size : ``int tuple``, default: (90, 45)
+            Shape of resulting array. 
             (a, b) where ::
                 - a, orientation angle length.
                 - b, ellipticity angle length.  
@@ -764,7 +765,7 @@ class SpmSurface:
             Add noise with wishard distribution,
             simulating 15 looks messure.          
         **int_kw :
-            All additional keyword arguments are pass to 
+            All additional keyword arguments are passed to 
             t_matrix.SpmSurface._spm2_integration call.    
 
         Returns
