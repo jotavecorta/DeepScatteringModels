@@ -1,3 +1,8 @@
+"""Script with functions to generate and save raw data for use
+in train and evaluation of unsupervised deep learning models. 
+
+Generated data is composed of polarimetric signatures of random rough
+surfaces, calculated using small perturbation method."""
 from itertools import product
 import os
 
