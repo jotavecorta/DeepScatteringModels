@@ -1,4 +1,4 @@
-# DL-SM
+# DeepScatteringModels
 Physics of Electromagnetic Scattering Models explored with Deep Learning tools.
 
 The material collected in this repository correspond to an area of study called "Physics-Based Deep Learning", a field that
