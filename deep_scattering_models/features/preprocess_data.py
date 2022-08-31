@@ -4,7 +4,6 @@ directory.
 
 """
 from sklearn.preprocessing import RobustScaler
-from sklearn.base import BaseEstimator, TransformerMixin
 
 class Scaler(RobustScaler):
     def __init__(self):

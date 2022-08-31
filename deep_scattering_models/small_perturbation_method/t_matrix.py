@@ -1,3 +1,4 @@
+#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 
@@ -12,15 +13,14 @@ All calculations are made for backscattering angle.
 import numpy as np
 from scipy.integrate import simpson
 
-from johnson_1999 import alpha1_h, alpha2_h, alpha2_v, beta1_v, beta2_v
-from spm1 import a1HHF1, a1HVF1, a1VVF1, a1HHF2, a1VVF2, a1HVF2
-from spm1 import w
-from spm2 import L0_11HH, L0_11HV, L0_11VV, L0_22HH, L0_22HV, L0_22VV
-from spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
-from spm2 import L1_12HH, L1_12HV, L1_12VV
-
-import deep_scattering_models.utils as utils
-#from deep_scattering_models.utils import cwishrnd
+from .johnson_1999 import alpha1_h, alpha2_h, alpha2_v, beta1_v, beta2_v
+from .spm1 import a1HHF1, a1HVF1, a1VVF1, a1HHF2, a1VVF2, a1HVF2
+from .spm1 import w
+from .spm2 import L0_11HH, L0_11HV, L0_11VV, L0_22HH, L0_22HV, L0_22VV
+from .spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
+from .spm2 import L1_12HH, L1_12HV, L1_12VV
+#%%
+from deep_scattering_models.utils import cwishrnd
 
 class SpmSurface:
     """Generates a one, or two, layer random rough surface with specified 
@@ -738,7 +738,7 @@ class SpmSurface:
         lambda_,
         theta_inc,
         phi_inc,
-        grid_size=(90, 45),
+        grid_size=(45, 90),
         second_order=True,
         wishard_noise=False,
         **int_kw
@@ -760,8 +760,8 @@ class SpmSurface:
         grid_size : ``int tuple``, default: (90, 45)
             Shape of resulting array. 
             (a, b) where ::
-                - a, orientation angle length.
-                - b, ellipticity angle length.  
+                - a, ellipticity angle length.
+                - b, orientation angle length.  
         wishard_noise :  ``bool``, default: False
             Add noise with wishard distribution,
             simulating 15 looks messure.          
@@ -794,7 +794,7 @@ class SpmSurface:
             m_matrix = cwishrnd(m_matrix)
 
         # Grid Size
-        n_psi, n_chi = grid_size
+        n_chi, n_psi = grid_size
 
         # Orientation and ellipticity angles
         psi = np.linspace(0, 180, n_psi) * np.pi/180

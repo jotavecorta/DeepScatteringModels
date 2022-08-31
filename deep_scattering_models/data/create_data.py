@@ -1,3 +1,4 @@
+#%%
 """Script with functions to generate and save raw data for use
 in train and evaluation of unsupervised deep learning models. 
 
@@ -8,7 +9,7 @@ import os
 
 import numpy as np
 
-from t_matrix import SpmSurface
+from deep_scattering_models.small_perturbation_method.t_matrix import SpmSurface
 
 
 def init_parameters_grid(grid_length=35, seed=123):
@@ -30,9 +31,9 @@ def init_parameters_grid(grid_length=35, seed=123):
     """
 
     # Parameters to sample [cm]: distance btw layers, rms high and corr length
-    distance = np.linspace(.1, .7, 35)
-    rms_high1 = np.linspace(.004, .012, 35)
-    rms_high2 = np.linspace(.004, .012, 35)
+    distance = np.linspace(.1, .7, grid_length)
+    rms_high1 = np.linspace(.004, .012, grid_length)
+    rms_high2 = np.linspace(.004, .012, grid_length)
     corr_length1, corr_length2 = 6*rms_high1, 6*rms_high2
 
     # Layers 1 and 2 Dielectric Constant
@@ -43,13 +44,13 @@ def init_parameters_grid(grid_length=35, seed=123):
     # Returns a dictionary with all parameters shuffled to form grid
     rng = np.random.default_rng(seed)
     space_grid = {
-        'rms_high' : rng.shuffle(rms_high1),
-        'corr_length' : rng.shuffle(corr_length1), 
-        'epsilon' : rng.shuffle(epsilon1),
-        'epsilon_2' : rng.shuffle(epsilon2), 
-        'rms_high_2' : rng.shuffle(rms_high2), 
-        'corr_length_2' : rng.shuffle(corr_length2),
-        'distance' : rng.shuffle(distance),
+        'rms_high' : rng.permutation(rms_high1),
+        'corr_length' : rng.permutation(corr_length1), 
+        'epsilon' : rng.permutation(epsilon1),
+        'epsilon_2' : rng.permutation(epsilon2), 
+        'rms_high_2' : rng.permutation(rms_high2), 
+        'corr_length_2' : rng.permutation(corr_length2),
+        'distance' : rng.permutation(distance),
     }
 
     return space_grid
@@ -69,6 +70,7 @@ def sample_parameters(**kwargs):
     ``generator``     
         Dictionary with all SpmSurface class argument values sampled.
     """    
+
     # Initialize parameters space grid
     params_to_sample = init_parameters_grid(**kwargs)
 
@@ -82,7 +84,7 @@ def sample_parameters(**kwargs):
 
         yield  surf_params
 
-def make_data(realizations=20480, noise=False, size=(90, 45), **kwargs):
+def make_data(realizations=20480, noise=False, size=(45, 90), **kwargs):
     """Create stacked arrays of polarization signatures data from two layer 
     random rough surface, for use in deep learning unsupervised models. 
     
@@ -92,12 +94,12 @@ def make_data(realizations=20480, noise=False, size=(90, 45), **kwargs):
         Number of experiments to run.
     noise: ``bool``, default : False
         Add wishard noise to each signature.
-    size : ``int tuple``, default : (90, 45)
+    size : ``int tuple``, default : (45, 90)
         Shape of each polarization signature.
-        (a, b) where ::
-            - a, orientation angle length.
-            - b, ellipticity angle length. 
-    **kwargs :        
+        (a, b) where: ::
+        - a, ellipticity angle length.
+        - b, orientation angle length.  
+    **kwargs :      
         All additional keyword arguments are passed to 
         numpy.random.default_rng call.
 
@@ -107,6 +109,7 @@ def make_data(realizations=20480, noise=False, size=(90, 45), **kwargs):
         Array of shape (realizations, shape[0], shape[1]) 
         containing generated data.
     """ 
+
     # Constants parameters: incident wave length and number [cm]
     lambda_ = .245
     k = 2 * np.pi / lambda_
@@ -136,7 +139,7 @@ def make_data(realizations=20480, noise=False, size=(90, 45), **kwargs):
         )
 
         # Stack result in data
-        data[i, :, :] = signature
+        data[i, :, :] = np.real(signature)
 
     return data
 
@@ -149,9 +152,9 @@ def save_data(file_name, data):
         Name of the file.
 
     data : ``numpy.ndarray``       
-        Array containing data.
-        
+        Array containing data.     
     """
+
     # Path to parent src directory
     src_dir = os.path.normpath(os.getcwd() + '/../..')
 
@@ -164,3 +167,31 @@ def save_data(file_name, data):
 
     print(f'Data saved at {file_path}')
 
+def load_data(file_name):
+    """Load data from data directory, on the repository.
+    
+    Parameters
+    ----------
+    file_name : ``str``       
+        Name of the file.
+
+    Returns
+    -------
+    data : ``numpy.ndarray``       
+        Array containing data.     
+    """
+    
+    # Path to parent src directory
+    src_dir = os.path.normpath(os.getcwd() + '/../..')
+
+    # Path to data parent folder
+    data_dir = os.path.join(src_dir, 'data/spm')
+
+    # Saves data in file
+    file_path = os.path.join(data_dir, f'{file_name}.npy')
+    data = np.load(file_path)
+
+    return data
+
+
+# %%

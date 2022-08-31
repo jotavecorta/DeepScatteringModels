@@ -6,4 +6,5 @@ NAME = "spm"
 from . import johnson_1999
 from . import spm1
 from . import spm2
+from . import t_matrix
 
