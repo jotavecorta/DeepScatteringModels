@@ -1,10 +1,12 @@
-"""Script with functions to plot data and model results."""
+"""Module with functions to plot data and model results."""
 from matplotlib import pyplot as plt
 import numpy as np
 
 
 def plot_polarization_signature(sigma, ax=None, plot_kw=None):
+    """Returns axes with a colormesh plot of surface polarization signature.
     
+    """
     # Set default values to kwargs 
     ax = plt.gca() if ax is None else ax
 
@@ -14,20 +16,28 @@ def plot_polarization_signature(sigma, ax=None, plot_kw=None):
     n_chi, n_psi = sigma.shape
 
     # Orientation and ellipticity angles
-    psi = np.linspace(0, 180, n_psi) * np.pi/180
-    chi = np.linspace(-45, 45, n_chi) * np.pi/180
+    psi = np.linspace(0, 180, n_psi) 
+    chi = np.linspace(-45, 45, n_chi) 
 
     PSI, CHI = np.meshgrid(psi, chi)
 
     # Plot polarization signature
     c = ax.pcolormesh(PSI, CHI, sigma, shading = 'gouraud', **plot_kw)
     
-    # Plot Settings             
+    # Axes Settings             
     ax.set_title(r'$\sigma(\psi,\chi)$', fontsize = 20)
-    ax.set_xlabel(r"$\psi$", fontsize = 16)
-    ax.set_ylabel(r"$\chi$", fontsize = 16)
+    
+    ax.set_xlabel(r"Orientation Angle $\psi$ [°]", fontsize = 14)
+    ax.set_ylabel(r"Ellipticity Angle $\chi$ [°]", fontsize = 14)
 
+    ax.set_xticks(np.arange(0, 181, 30))
+    ax.set_yticks(np.arange(-45, 46, 15))
+
+    # Figure Settings
     fig = ax.get_figure()
     fig.colorbar(c, ax=ax)
+
+    fig.set_figheight(8)
+    fig.set_figwidth(10)
 
     return ax

@@ -1,10 +1,8 @@
-#%%
-"""Script with functions to generate and save raw data for use
+"""Module with functions to generate and save raw data for use
 in train and evaluation of unsupervised deep learning models. 
 
 Generated data is composed of polarimetric signatures of random rough
 surfaces, calculated using small perturbation method."""
-from itertools import product
 import os
 
 import numpy as np
@@ -12,7 +10,7 @@ import numpy as np
 from deep_scattering_models.small_perturbation_method.t_matrix import SpmSurface
 
 
-def init_parameters_grid(grid_length=35, seed=123):
+def init_parameters_grid(grid_length=35):
     """Returns a dictionary with all parameters values to initialize
     multiples SpmSurface class instances.
     
@@ -20,8 +18,6 @@ def init_parameters_grid(grid_length=35, seed=123):
     ----------
     grid_length : ``int``, default: 35         
         Number of elements of every parameter array.
-    seed : ``int``       
-        A seed passed to numpy.random.default_rng call.
 
     Returns
     -------
@@ -42,25 +38,29 @@ def init_parameters_grid(grid_length=35, seed=123):
     epsilon2 = np.arange(init_epsilon, init_epsilon + grid_length)
 
     # Returns a dictionary with all parameters shuffled to form grid
-    rng = np.random.default_rng(seed)
+ 
     space_grid = {
-        'rms_high' : rng.permutation(rms_high1),
-        'corr_length' : rng.permutation(corr_length1), 
-        'epsilon' : rng.permutation(epsilon1),
-        'epsilon_2' : rng.permutation(epsilon2), 
-        'rms_high_2' : rng.permutation(rms_high2), 
-        'corr_length_2' : rng.permutation(corr_length2),
-        'distance' : rng.permutation(distance),
+        'rms_high' : rms_high1,
+        'corr_length' : corr_length1, 
+        'epsilon' : epsilon1,
+        'epsilon_2' : epsilon2, 
+        'rms_high_2' : rms_high2, 
+        'corr_length_2' : corr_length2,
+        'distance' : distance,
     }
 
     return space_grid
 
-def sample_parameters(**kwargs):
+def sample_parameters(realizations=20480, seed=123, **kwargs):
     """Returns a generator with all parameters values to initialize
     SpmSurface class.
     
     Parameters
     ----------
+    realizations : ``int``, default : 20480
+        Number of experiments to run.    
+    seed : ``int``       
+        A seed passed to numpy.random.default_rng call.
     **kwargs :        
         All additional keyword arguments are passed to 
         numpy.random.default_rng call.
@@ -77,8 +77,21 @@ def sample_parameters(**kwargs):
     # Form a list of hyperparameters values
     parameters_list = list(params_to_sample.values())
 
+    # Select
+    rng = np.random.default_rng(seed)
+
     # Get all posible combinations of parameters
-    for items in product(*parameters_list):
+    for _ in range(realizations):
+        # Generates list of randomly picked parameters
+        rand_idx = rng.integers(35, size=7)
+        
+        if rand_idx[2]==rand_idx[3]:
+            # If epsilon1==epsilon2, replace former            
+            new_set = list(set(np.arange(35)).difference([rand_idx[3]]))
+            rand_idx[3] = rng.choice(new_set)
+
+        items = [param[rand_idx[i]] for i, param in enumerate(parameters_list)]
+
         # Form dicts of parameters for SpmSurface and yield it
         surf_params = dict(zip(params_to_sample.keys(), items))
 
@@ -193,5 +206,3 @@ def load_data(file_name):
 
     return data
 
-
-# %%

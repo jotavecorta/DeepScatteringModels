@@ -1,4 +1,4 @@
-"""Script with functions to scale and preprocess raw data. Final data
+"""Module with functions to scale and preprocess raw data. Final data
 will be use for train a Convolutial Autoencoder defined in model 
 directory. 
 
