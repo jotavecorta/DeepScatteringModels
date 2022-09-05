@@ -1,3 +1,6 @@
+"""Module with functions to evaluate models performance, and select best
+set of hyperparameters.
+"""
 from itertools import product
 import json
 import os
@@ -12,10 +15,31 @@ from tqdm import tqdm
 
 from ..features.preprocess_data import Scaler
 
-def k_fold_cv(data, model_creator, configuration):
-    """"""
+def k_fold_cv(data, model_creator, configuration, cv_splits=5):
+    """K-Fold Cross Validation Capable of evaluate Convolutional
+    Autoencoders and other Deep Learning Unsupervised Models using
+    KerasRegresor wrapper.
+    
+    Parameters
+    ----------
+    data : ``numpy.ndarray``         
+        Data to be used for kfold cv.
+    model_creator : callable function or class instance        
+        Should construct, compile and return a Keras model, 
+        which will then be used to fit/predict.
+    configuration : ``dict``
+        Model parameters and fitting parameters.
+    cv_splits : ``int``, default: 5
+        Number of folds to be used in cross validaton.   
+
+    Returns
+    -------
+    ``dict``      
+        Contanins scores mean values over all folds for test and train
+        sets.    
+    """
     # K-Fold cross validation with each hyperparam combination
-    cv = KFold(n_splits=5)
+    cv = KFold(n_splits=cv_splits)
 
     # Initialize list to save scores
     fold_score = []
@@ -62,8 +86,38 @@ def k_fold_cv(data, model_creator, configuration):
             }
 
 
-def randomized_search(data, model_creator, parameters_grid, n_samples):                   
-    """"""
+def randomized_search(
+    data, 
+    model_creator, 
+    parameters_grid, 
+    n_samples=25, 
+    cv_splits=5
+    ):                   
+    """ Hyperparameter tunning using random sampling over hyperparameters 
+    space K-fold Cross Validation is used to get scores for each configuration. 
+    
+    Parameters
+    ----------
+    data : ``numpy.ndarray``         
+        Data to be used for kfold cv.
+    model_creator : callable function or class instance        
+        Should construct, compile and return a Keras model, 
+        which will then be used to fit/predict.
+    parameters_grid : ``dict``
+        Dict with model and fitting parameters to
+        be adjust. Keys correspondent to each parameter must be named
+        as in keras doc.
+    n_samples : ``int``, default: 25
+        Number of different configurations to be scored.    
+    cv_splits : ``int``, default: 5
+        Number of folds to be used in cross validaton.        
+
+    Returns
+    -------
+    ``tuple``      
+        pandas.DataFrame with all configuration scores and dict with
+        best configuration -with highest test score- parameters.
+    """
     # Form a list of hyperparameters values
     hyperparameters_list = list(parameters_grid.values())
 
@@ -93,7 +147,12 @@ def randomized_search(data, model_creator, parameters_grid, n_samples):
 
     for configuration in tqdm(sampled_hyperparams):
         # Get scores of configuration via kfold cv
-        fold_scores = k_fold_cv(data, model_creator, configuration)
+        fold_scores = k_fold_cv(
+            data, 
+            model_creator, 
+            configuration, 
+            cv_splits=cv_splits
+            )
 
         configuration.update(fold_scores)
         configurations_score.append(configuration)
@@ -105,7 +164,7 @@ def randomized_search(data, model_creator, parameters_grid, n_samples):
 
         return df_scores, best_configuration
 
-def grid_search(data, model_creator):
+def grid_search():
     pass        
 
 def save_configuration(
