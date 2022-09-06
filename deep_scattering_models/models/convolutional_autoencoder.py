@@ -1,90 +1,145 @@
 import os
 import warnings
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras import layers, losses
 from tensorflow.python.util import deprecation
 
-# Config tf verbosesity 
+# Config tf verbosesity
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
 
 # Config warnings verbosity
 deprecation._PRINT_DEPRECATION_WARNINGS = False
 
-warnings.filterwarnings('ignore', category=DeprecationWarning)
-warnings.filterwarnings('ignore', category=FutureWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=FutureWarning)
+
 
 class ConvAutoencoder(Model):
-    
-    def __init__(self, latent_dim, kernel_init='glorot_uniform'):
+    def __init__(self, latent_dim, input_shape, conv_layers=None, dense_layers=None):
+
         super().__init__()
         self.latent_dim = latent_dim
-        self.encoder = tf.keras.Sequential([layers.InputLayer(input_shape = (64, 64, 1)), 
-                                            layers.Conv2D(4, (6, 6), strides=1, activation = 'relu'),
-                                            layers.MaxPooling2D((2, 2), strides=1, padding = 'same'),
-                                            
-                                            layers.Conv2D(16, (5, 5), strides=2, activation = 'relu'),
-                                            layers.MaxPooling2D((2, 2), strides=1, padding = 'same'),
-                                            
-                                            layers.Conv2D(32, (4, 4), strides=2, activation = 'relu'),
-                                            layers.MaxPooling2D((2, 2), strides=1, padding = 'same'),
+        self.input_shape = input_shape
+        self.conv_layers = {} if conv_layers is None else conv_layers
+        self.dense_layers = {} if dense_layers is None else dense_layers
 
-                                            layers.Conv2D(32, (3, 3), strides=2, activation = 'relu'),
-                                            layers.MaxPooling2D((2, 2), strides=1, padding = 'same'),
+        self.encoder = self._create_encoder()
+        self.decoder = self._create_decoder()
 
-                                            layers.Flatten(),
-                                            
-                                            layers.Dense(units=6*6*32, activation='relu', kernel_initializer=kernel_init), 
-                                            #kernel_regularizer=tf.keras.regularizers.l2(l=0.1)),
-                                            layers.Dropout(.2),
+    def _create_encoder(self):
 
-                                            layers.Dense(units=256, activation='relu', kernel_initializer=kernel_init), 
-                                            #kernel_regularizer=tf.keras.regularizers.l2(l=0.1)),
-                                            layers.Dropout(.2),
-                                            
-                                            layers.Dense(units=128, activation='relu', kernel_initializer=kernel_init), 
+        # Rename layers configuration
+        dense_config = self.dense_layers
+        conv_config = self.conv_layers
 
-                                            layers.Dense(units=64, activation='relu', kernel_initializer=kernel_init), 
-                                            #kernel_regularizer=tf.keras.regularizers.l2(l=0.1)),
-                                            #layers.Dropout(.2),
+        input_shape = self.input_shape
 
-                                            layers.Dense(latent_dim, activation = 'linear')])
-      
+        # Create a secuential model with input shape
+        model = tf.keras.sequential()
+        model.add(layers.InputLayer(input_shape=input_shape))
+
+        # Add Convolutional layers
+        conv_activation = conv_config.get("activation", "relu")
+        conv_init = conv_config.get("kernel_initializer", "normal")
+
+        for filter, kernel, stride in conv_config.get(
+            "layers_config", [(4, (6, 6), 1)]
+        ):
+
+            model.add(
+                layers.Conv2D(
+                    filter,
+                    kernel,
+                    strides=stride,
+                    activation=conv_activation,
+                    kernel_initializer=conv_init,
+                )
+            )
+
+        # Add dense layers
+        # Get activation and kernel initializer
+        dense_activation = dense_config.get("activation", "relu")
+        kernel_init = dense_config.get("kernel_initializer", "normal")
+
+        # Add intermediate layer to match dense and convolutinal layers
+        model.add(layers.Flatten())
+
+        match_shape = np.prod(model.output_shape[-1][1:])
+        model.add(layers.Dense(units=match_shape))
+
+        for neurons in dense_config.get("layers_units", (16,)):
+            model.add(
+                layers.Dense(
+                    units=neurons,
+                    activation=dense_activation,
+                    kernel_initializer=kernel_init,
+                )
+            )
+
+        # Add latent space layer
+        model.add(layers.Dense(units=self.latent_dim, activation="linear"))
+
+        return model
+
+    def _create_decoder(self):
+        # Rename layers configuration
+        dense_config = self.dense_layers
+        conv_config = self.conv_layers
         
-        self.decoder = tf.keras.Sequential([layers.InputLayer(input_shape=(latent_dim,)),
+        # Create a secuential model with input shape
+        model = tf.keras.sequential()
+        model.add(layers.InputLayer(input_shape=(self.latent_dim,)))
+       
+        # Add dense layers
+        # Get activation and kernel initializer
+        dense_activation = dense_config.get("activation", "relu")
+        kernel_init = dense_config.get("kernel_initializer", "normal")
 
-                                            layers.Dense(units=64, activation='relu', kernel_initializer=kernel_init), 
-                                            #layers.Dropout(.2),
+        for neurons in reversed(dense_config.get("layers_units", (16,))):
+            model.add(
+                layers.Dense(
+                    units=neurons,
+                    activation=dense_activation,
+                    kernel_initializer=kernel_init,
+                )
+            )        
+        
+        # Add intermediate layer to match dense and convolutinal layers
+        match_shape = np.prod(model.output_shape[-1][1:])
+        model.add(layers.Dense(units=match_shape))
+        
+        # Add Convolutional layers
+        conv_activation = conv_config.get("activation", "relu")
+        conv_init = conv_config.get("kernel_initializer", "normal")
 
-                                            layers.Dense(units=128, activation='relu', kernel_initializer=kernel_init), 
+        for filter, kernel, stride in reversed(conv_config.get(
+            "layers_config", [(4, (6, 6), 1)])
+        ):
 
-                                            layers.Dense(units=256, activation='relu', kernel_initializer=kernel_init), 
-                                            #kernel_regularizer=tf.keras.regularizers.l2(l=0.1)),
-                                            layers.Dropout(.2),                                          
+            model.add(
+                layers.Conv2DTranspose(
+                    filter,
+                    kernel,
+                    strides=stride,
+                    activation=conv_activation,
+                    kernel_initializer=conv_init,
+                )
+            )
 
-                                            layers.Dense(units=6*6*32, activation='relu', kernel_initializer=kernel_init), 
-                                            #kernel_regularizer=tf.keras.regularizers.l2(l=0.1)),
-                                            layers.Dropout(.2),
-                                            
-                                            layers.Reshape(target_shape=(6,6,32)),
-                                            
-                                            layers.Conv2DTranspose(32, (3, 3), strides=2, activation="relu"),
+        # Add reshape layer
+        model.add(layers.Conv2D(1, (3, 3), activation="linear", padding="same"))
 
-                                            layers.Conv2DTranspose(32, (4, 4), strides=2, activation="relu"),
-                                            
-                                            layers.Conv2DTranspose(16, (5, 5), strides=2, activation="relu"),
-
-                                            layers.Conv2DTranspose(4, (6, 6), strides=1, activation='relu'),
-
-                                            layers.Conv2D(1, (3, 3), activation="linear", padding="same")])
+        return model
 
     def call(self, X):
         encoded = self.encoder(X)
         decoded = self.decoder(encoded)
         return decoded
-  
+
     def summary(self):
         print(self.encoder.summary())
         print(self.decoder.summary())

@@ -5,13 +5,13 @@ with open("README.md", "r") as fp:
 
 
 REQUIREMENTS = [
-    "numpy==1.19.5",
-    "matplotlib==3.4.3",
-    "keras==2.6.0",
-    "pandas==1.3.4",
-    "scikit-learn==1.0",
-    "scipy==1.7.1",
-    "tensorflow==2.6.0"
+    "numpy==1.22.4",
+    "matplotlib==3.5.2",
+    "keras==2.7.0",
+    "pandas==1.4.3",
+    "scikit-learn==1.1.2",
+    "scipy==1.9.1",
+    "tensorflow-gpu==2.7.0"
     ]
 
 setup(
