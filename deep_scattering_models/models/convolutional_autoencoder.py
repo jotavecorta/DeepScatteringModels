@@ -68,7 +68,7 @@ class ConvAutoencoder(Model):
         # Add intermediate layer to match dense and convolutinal layers
         model.add(layers.Flatten())
 
-        match_shape = np.prod(model.output_shape[-1][1:])
+        match_shape = np.prod(model.layers[-1].output_shape[1:])
         model.add(layers.Dense(units=match_shape))
 
         for neurons in dense_config.get("layers_units", (16,)):
@@ -109,7 +109,7 @@ class ConvAutoencoder(Model):
             )        
         
         # Add intermediate layer to match dense and convolutinal layers
-        match_shape = np.prod(model.output_shape[-1][1:])
+        match_shape = np.prod(model.layers[-1].output_shape[1:])
         model.add(layers.Dense(units=match_shape))
         
         # Add Convolutional layers
