@@ -106,7 +106,7 @@ def make_data(realizations=20480, noise=False, size=(45, 90), **kwargs):
     realizations : ``int``, default : 20480
         Number of experiments to run.
     noise: ``bool``, default : False
-        Add wishard noise to each signature.
+        Add wishart noise to each signature.
     size : ``int tuple``, default : (45, 90)
         Shape of each polarization signature.
         (a, b) where: ::
@@ -135,7 +135,7 @@ def make_data(realizations=20480, noise=False, size=(45, 90), **kwargs):
 
     # Initialize ndarray for stack polarization signatures
     data = np.zeros((realizations, size[0], size[1]))
-
+    
     for i in range(realizations):
         # Sample realization of parameters
         surf_parameters = next(parameters_generator)
@@ -169,14 +169,16 @@ def save_data(file_name, data):
     """
 
     # Path to parent src directory
-    src_dir = os.path.normpath(os.getcwd() + '/../..')
+    src_dir = os.path.normpath(os.getcwd() + '/..')
 
     # Path to data parent folder
     data_dir = os.path.join(src_dir, 'data/spm')
 
     # Saves data in file
     file_path = os.path.join(data_dir, file_name)
-    np.save(file_path, data)
+
+    with open(file_path, 'wb') as file_:
+        np.save(file_, data)
 
     print(f'Data saved at {file_path}')
 
@@ -195,7 +197,7 @@ def load_data(file_name):
     """
     
     # Path to parent src directory
-    src_dir = os.path.normpath(os.getcwd() + '/../..')
+    src_dir = os.path.normpath(os.getcwd() + '/..')
 
     # Path to data parent folder
     data_dir = os.path.join(src_dir, 'data/spm')
@@ -205,4 +207,3 @@ def load_data(file_name):
     data = np.load(file_path)
 
     return data
-

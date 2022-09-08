@@ -42,13 +42,14 @@ def plot_polarization_signature(sigma, ax=None, plot_kw=None):
 
     return ax
 
-def plot_histogram(data, n_bins=1000, ax=None, plot_kw=None):
+def plot_histogram(data, n_bins=100, ax=None, hist_kw=None, plot_kw=None):
     """Returns axes with a histogram plot of polarization 
     signatures.
     """    
     # Set default values to kwargs 
     ax = plt.gca() if ax is None else ax
 
+    hist_kw = {} if hist_kw is None else hist_kw
     plot_kw = {} if plot_kw is None else plot_kw
     
     # Inicializo la cuenta de cada valor y el número de bins
@@ -56,15 +57,15 @@ def plot_histogram(data, n_bins=1000, ax=None, plot_kw=None):
 
     # Guardo la cuenta de cada valor para cada firma
     for signature in data:
-        hist, bins = np.histogram(signature, bins=n_bins)
+        hist, bins = np.histogram(signature, bins=n_bins, **hist_kw)
         count += hist
 
     # Ploteo el resultado
     fig = ax.get_figure() 
     ax.plot(bins[:-1], count, **plot_kw) 
-    ax.set_xlabel(r"$\sigma(\psi, \chi)$")  
-    ax.set_ylabel("Count")
-    ax.set_title("Polarization Signature values distribution") 
+    ax.set_xlabel(r"$\sigma(\psi, \chi)$", fontsize=12)  
+    ax.set_ylabel("Count", fontsize=12)
+    ax.set_title("Polarization Signature values distribution", fontsize=18) 
 
     fig.set_figheight(8)
     fig.set_figwidth(8)

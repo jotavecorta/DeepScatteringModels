@@ -48,6 +48,6 @@ class MMScaler(MinMaxScaler):
 
 def to_dB(data):
     # Replace zeros to take log
-    no_zeros_data = np.where(data!=0.0, data, 1e-9)
+    no_zeros_data = np.where(data>0.0, data, 1e-9)
     
     return 10*np.log10(no_zeros_data)
