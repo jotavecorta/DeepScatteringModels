@@ -26,6 +26,11 @@ class RScaler(RobustScaler):
         transformed = super().fit_transform(X.reshape(-1, X_shape[-1]), y=None, **fit_params) 
         return transformed.reshape(X_shape) 
 
+    def inverse_transform(self, X):
+        X_shape = X.shape
+        unscaled = super().inverse_transform(X.reshape(-1, X_shape[-1]))  
+        return unscaled.reshape(X_shape)  
+
 class MMScaler(MinMaxScaler):
     """MinMax Scaler ready to use with numpy.ndarrays of any
     dimentions. Inherits from sklearn.preprocessing.MinMaxScaler.
@@ -45,6 +50,11 @@ class MMScaler(MinMaxScaler):
         X_shape = X.shape
         transformed = super().fit_transform(X.reshape(-1, X_shape[-1]), y=None, **fit_params) 
         return transformed.reshape(X_shape)   
+
+    def inverse_transform(self, X):
+        X_shape = X.shape
+        unscaled = super().inverse_transform(X.reshape(-1, X_shape[-1]))  
+        return unscaled.reshape(X_shape)         
 
 def to_dB(data):
     # Replace zeros to take log

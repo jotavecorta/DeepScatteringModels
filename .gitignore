@@ -79,8 +79,9 @@ venv.bak/
 .spyderproject
 .spyproject
 
-# Big sized numpy arrays
+# Big sized numpy arrays and Models pkls
 *.npy
+*.pkl
 
 # Others
 # mypy

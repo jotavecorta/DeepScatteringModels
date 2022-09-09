@@ -175,7 +175,7 @@ def save_data(file_name, data):
     data_dir = os.path.join(src_dir, 'data/spm')
 
     # Saves data in file
-    file_path = os.path.join(data_dir, file_name)
+    file_path = os.path.join(data_dir, f'{file_name}.npy')
 
     with open(file_path, 'wb') as file_:
         np.save(file_, data)
