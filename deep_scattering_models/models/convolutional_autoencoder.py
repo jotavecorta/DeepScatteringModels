@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras import layers, losses
+from tensorflow.keras import layers
 from tensorflow.python.util import deprecation
 
 # Config tf verbosesity
@@ -20,15 +20,19 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 class ConvAutoencoder(Model):
     def __init__(self, latent_dim, input_shape, conv_layers=None, dense_layers=None):
-
         super().__init__()
         self.latent_dim = latent_dim
-        self.input_shape = input_shape
+        
+        self._input_shape = input_shape
+        self._match_shape = 0
+        
         self.conv_layers = {} if conv_layers is None else conv_layers
         self.dense_layers = {} if dense_layers is None else dense_layers
 
         self.encoder = self._create_encoder()
         self.decoder = self._create_decoder()
+
+
 
     def _create_encoder(self):
 
@@ -36,10 +40,10 @@ class ConvAutoencoder(Model):
         dense_config = self.dense_layers
         conv_config = self.conv_layers
 
-        input_shape = self.input_shape
+        input_shape = self._input_shape
 
         # Create a secuential model with input shape
-        model = tf.keras.sequential()
+        model = tf.keras.Sequential()
         model.add(layers.InputLayer(input_shape=input_shape))
 
         # Add Convolutional layers
@@ -66,10 +70,10 @@ class ConvAutoencoder(Model):
         kernel_init = dense_config.get("kernel_initializer", "normal")
 
         # Add intermediate layer to match dense and convolutinal layers
+        self._match_shape = model.layers[-1].output_shape[1:]
         model.add(layers.Flatten())
-
-        match_shape = np.prod(model.layers[-1].output_shape[1:])
-        model.add(layers.Dense(units=match_shape))
+        model.add(layers.Dense(units=np.prod(self._match_shape)))
+        
 
         for neurons in dense_config.get("layers_units", (16,)):
             model.add(
@@ -91,7 +95,7 @@ class ConvAutoencoder(Model):
         conv_config = self.conv_layers
         
         # Create a secuential model with input shape
-        model = tf.keras.sequential()
+        model = tf.keras.Sequential()
         model.add(layers.InputLayer(input_shape=(self.latent_dim,)))
        
         # Add dense layers
@@ -109,8 +113,8 @@ class ConvAutoencoder(Model):
             )        
         
         # Add intermediate layer to match dense and convolutinal layers
-        match_shape = np.prod(model.layers[-1].output_shape[1:])
-        model.add(layers.Dense(units=match_shape))
+        model.add(layers.Dense(units=np.prod(self._match_shape)))    
+        model.add(layers.Reshape(target_shape=self._match_shape))
         
         # Add Convolutional layers
         conv_activation = conv_config.get("activation", "relu")

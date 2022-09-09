@@ -55,12 +55,12 @@ def plot_histogram(data, n_bins=100, ax=None, hist_kw=None, plot_kw=None):
     # Inicializo la cuenta de cada valor y el número de bins
     count = np.zeros(n_bins)
 
-    # Guardo la cuenta de cada valor para cada firma
+    # Store counts of each signature histogram
     for signature in data:
         hist, bins = np.histogram(signature, bins=n_bins, **hist_kw)
         count += hist
 
-    # Ploteo el resultado
+    # Plot value counts
     fig = ax.get_figure() 
     ax.plot(bins[:-1], count, **plot_kw) 
     ax.set_xlabel(r"$\sigma(\psi, \chi)$", fontsize=12)  
@@ -71,3 +71,37 @@ def plot_histogram(data, n_bins=100, ax=None, hist_kw=None, plot_kw=None):
     fig.set_figwidth(8)
 
     return ax
+
+def plot_history(history, metric="mean_absolute_error", ax=None, plot_kw=None):
+    """Returns axes with a line plot of training history.
+    """    
+    # Set default values to kwargs 
+    ax = plt.gca() if ax is None else ax
+
+    plot_kw = {} if plot_kw is None else plot_kw    
+
+    # Unpack train and test metrics and scores
+    train_metric = metric
+    test_metric = f"val_{metric}"
+
+    train_score = history.history[train_metric]
+    test_score = history.history[test_metric]
+
+    # Plot scores in ax
+    ax.plot(train_score, label='Train Set', **plot_kw)
+    ax.plot(test_score, label='Test Set', **plot_kw)
+
+    ax.set_xlabel("Epochs", fontsize=12)
+    ax.set_ylabel("".join(metric.split("_")).capitalize, fontsize=12)
+    ax.set_title("Model train history", fontsize=15)
+    ax.legend()
+
+    fig = ax.get_figure()
+    fig.set_figheight(4)
+    fig.set_figwidth(10)
+    fig.tigth_layout()
+
+    return ax
+
+    
+
