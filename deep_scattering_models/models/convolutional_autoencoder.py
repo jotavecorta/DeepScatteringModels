@@ -147,3 +147,7 @@ class ConvAutoencoder(Model):
     def summary(self):
         print(self.encoder.summary())
         print(self.decoder.summary())
+
+
+def save_model(model, configuration):
+    pass
