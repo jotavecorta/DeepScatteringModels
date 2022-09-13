@@ -7,6 +7,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras import layers
 from tensorflow.python.util import deprecation
 
+from deep_scattering_models.models.select_model import save_configuration
+
 # Config tf verbosesity
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
@@ -33,9 +35,7 @@ class ConvAutoencoder(Model):
         self.decoder = self._create_decoder()
 
 
-
     def _create_encoder(self):
-
         # Rename layers configuration
         dense_config = self.dense_layers
         conv_config = self.conv_layers
@@ -50,10 +50,12 @@ class ConvAutoencoder(Model):
         conv_activation = conv_config.get("activation", "relu")
         conv_init = conv_config.get("kernel_initializer", "normal")
 
+        conv_pooling = conv_config.get("max_pooling", False)
+
         for filter, kernel, stride in conv_config.get(
             "layers_config", [(4, (6, 6), 1)]
         ):
-
+            # Convolutional Layer
             model.add(
                 layers.Conv2D(
                     filter,
@@ -64,10 +66,18 @@ class ConvAutoencoder(Model):
                 )
             )
 
+            # Add Max Pooling layer
+            if conv_pooling:
+                model.add(
+                    layers.MaxPooling2D((2, 2), strides=1, padding = 'same')
+                )
+
         # Add dense layers
         # Get activation and kernel initializer
         dense_activation = dense_config.get("activation", "relu")
         kernel_init = dense_config.get("kernel_initializer", "normal")
+
+        drop_out = dense_config.get("dropout", False)
 
         # Add intermediate layer to match dense and convolutinal layers
         self._match_shape = model.layers[-1].output_shape[1:]
@@ -83,6 +93,12 @@ class ConvAutoencoder(Model):
                     kernel_initializer=kernel_init,
                 )
             )
+
+            # Add dropout
+            if drop_out:
+                model.add(
+                    layers.Dropout(.2)
+                )
 
         # Add latent space layer
         model.add(layers.Dense(units=self.latent_dim, activation="linear"))
@@ -103,14 +119,23 @@ class ConvAutoencoder(Model):
         dense_activation = dense_config.get("activation", "relu")
         kernel_init = dense_config.get("kernel_initializer", "normal")
 
+        drop_out = dense_config.get("dropout", False)
+
         for neurons in reversed(dense_config.get("layers_units", (16,))):
+            # Dense layer
             model.add(
                 layers.Dense(
                     units=neurons,
                     activation=dense_activation,
                     kernel_initializer=kernel_init,
                 )
-            )        
+            )
+
+            # Add dropout
+            if drop_out:
+                model.add(
+                    layers.Dropout(.2)
+                )        
         
         # Add intermediate layer to match dense and convolutinal layers
         model.add(layers.Dense(units=np.prod(self._match_shape)))    
@@ -120,10 +145,12 @@ class ConvAutoencoder(Model):
         conv_activation = conv_config.get("activation", "relu")
         conv_init = conv_config.get("kernel_initializer", "normal")
 
+        conv_pooling = conv_config.get("max_pooling", False)
+
         for filter, kernel, stride in reversed(conv_config.get(
             "layers_config", [(4, (6, 6), 1)])
         ):
-
+            # Convolutional layer
             model.add(
                 layers.Conv2DTranspose(
                     filter,
@@ -133,6 +160,12 @@ class ConvAutoencoder(Model):
                     kernel_initializer=conv_init,
                 )
             )
+
+            # Add Max Pooling layer
+            if conv_pooling:
+                model.add(
+                    layers.MaxPooling2D((2, 2), strides=1, padding = 'same')
+                )            
 
         # Add reshape layer
         model.add(layers.Conv2D(1, (3, 3), activation="linear", padding="same"))
@@ -149,5 +182,30 @@ class ConvAutoencoder(Model):
         print(self.decoder.summary())
 
 
-def save_model(model, configuration):
-    pass
+def save_model(model, configuration_dict, name="cae"):
+    """Saves a model configuration as a json file.
+
+    Parameters
+    ----------
+    configuration_dict : ``dict``
+        Dictionary with model parameters as keys.
+    filename : ``str``, default: 'model_configuration'       
+        Name of the file.    
+    """   
+    # Get models directory path
+    src_dir = os.path.normpath(os.getcwd() + "/../..")
+    model_dir = os.path.join(src_dir, f"model")
+    
+    # Save model and weights into hdf5 file
+    model_filename = f"{name}_model_weights.h5"
+    model_path = os.path.join(model_dir, model_filename)
+    model.save(model_path)
+
+    # Save configuration into json file
+    config_filename = f"{name}_configuration"
+    save_configuration(
+        configuration_dict, 
+        filename=config_filename
+        )  
+
+    print(f"Model and weights saved at {model_path}")

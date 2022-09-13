@@ -163,7 +163,6 @@ def save_data(file_name, data):
     ----------
     file_name : ``str``       
         Name of the file.
-
     data : ``numpy.ndarray``       
         Array containing data.     
     """

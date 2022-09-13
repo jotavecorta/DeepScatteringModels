@@ -169,15 +169,27 @@ def grid_search():
 
 def save_configuration(
     configuration_dict, 
-    filename='model_configuration.json',
+    filename='model_configuration',
     scattering_model='spm'
     ):
-    # Get data directory path
-    src_dir = os.path.normpath(os.getcwd() + '/../..')
-    data_dir = os.path.join(src_dir, f'data/{scattering_model}')
+    """Saves a model configuration as a json file.
 
-    # Guardo la mejor configuración y visualizo el ranking
-    json_path = os.path.join(data_dir, filename)
+    Parameters
+    ----------
+    configuration_dict : ``dict``
+        Dictionary with model parameters as keys.
+    filename : ``str``, default: 'model_configuration'       
+        Name of the file.
+    scattering_model : ``str``, default: 'spm'       
+        The EMS model used to produce data.     
+    """    
+    # Get models directory path
+    src_dir = os.path.normpath(os.getcwd() + '/../..')
+    model_dir = os.path.join(src_dir, f'model')
+
+    # Create path to json file
+    filename = f'{filename}_{scattering_model}.json'
+    json_path = os.path.join(model_dir, filename)
 
     with open(json_path, 'w') as file_:
         json.dump(configuration_dict, file_, indent=4)
