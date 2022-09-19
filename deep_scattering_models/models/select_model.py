@@ -9,11 +9,12 @@ import numpy as np
 import pandas as pd
 
 from sklearn.model_selection import KFold
+from scikeras.wrappers import KerasRegressor
 from keras.wrappers.scikit_learn import KerasRegressor
 import tensorflow as tf
 from tqdm import tqdm 
 
-from ..features.preprocess_data import Scaler
+from ..features.preprocess_data import RScaler
 
 def k_fold_cv(data, model_creator, configuration, cv_splits=5):
     """K-Fold Cross Validation Capable of evaluate Convolutional
@@ -45,12 +46,12 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
     fold_score = []
     fold_train_score = []
 
-    for train_index, test_index in cv.split(data[:7000]):
+    for train_index, test_index in cv.split(data[:5000]):
         # Split into train and test
         train_set, test_set = data[train_index], data[test_index]
         
         # Scale each set
-        scaler = Scaler().fit(train_set)
+        scaler = RScaler().fit(train_set)
         scaled_train = scaler.transform(train_set)
         scaled_test = scaler.transform(test_set)
 
@@ -62,7 +63,7 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
         model_wrapper = KerasRegressor(
             model_creator,
             **configuration,
-            nb_epoch=150,
+            nb_epoch=100,
             verbose=0,
             validation_data=(scaled_test, scaled_test)
         )
