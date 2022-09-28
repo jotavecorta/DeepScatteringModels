@@ -6,6 +6,7 @@ stages, such as finding the best model architecture or tune
 hyperparameters like optimizer type, learning rate, batch size, etc.
 
 """
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import optimizers as opt
 from tensorflow.keras.losses import MeanSquaredError
@@ -19,7 +20,7 @@ FINAL_LEARNING_RATE = 0.00005
 TRAIN_SIZE = 7000
 
 def build_cae_architecture(
-    latent_dimention=10,
+    latent_dimension=10,
     conv_layers_config=None, 
     dense_layers_config=None,
     input_shape = (45, 90, 1)
@@ -29,7 +30,7 @@ def build_cae_architecture(
 
     Parameters
     ----------
-    latent_dimention : ``int``, default: 10         
+    latent_dimension : ``int``, default: 10         
         Number of units that connects encoder and decoder in the
         model.
     conv_layers_config : ``dict``, default: None
@@ -52,7 +53,7 @@ def build_cae_architecture(
 
     # Create and Compile Model
     model = ConvAutoencoder(
-        latent_dimention, 
+        latent_dimension, 
         input_shape,
         conv_layers=conv_layers_config,
         dense_layers=dense_layers_config
@@ -92,7 +93,7 @@ def create_autoencoder(optimizer='adam',
 
 
 def rmsProp_with_decay(
-    latent_dimention = 12,
+    latent_dimension = 12,
     initial_value=0.0003, 
     final_value=FINAL_LEARNING_RATE, 
     train_samples=TRAIN_SIZE,
@@ -152,7 +153,7 @@ def rmsProp_with_decay(
         )
 
     # Create and Compile Model
-    model = ConvAutoencoder(latent_dimention, kernel_init='normal')
+    model = ConvAutoencoder(latent_dimension, kernel_init='normal')
     model.compile(
         optimizer=opt,
         loss=MeanSquaredError(),

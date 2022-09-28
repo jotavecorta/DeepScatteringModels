@@ -818,5 +818,3 @@ class SpmSurface:
         sigma = 4 * np.pi/k**2 * dot_product  
 
         return sigma     
-
-# %%

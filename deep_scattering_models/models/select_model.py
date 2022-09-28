@@ -45,7 +45,7 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
     fold_score = []
     fold_train_score = []
 
-    for train_index, test_index in cv.split(data[:5000]):
+    for train_index, test_index in cv.split(data[:7000]):
         # Split into train and test
         train_set, test_set = data[train_index], data[test_index]
         
@@ -62,18 +62,18 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
         model_wrapper = KerasRegressor(
             model_creator,
             **configuration,
-            epochs=60,
+            epochs=50,
             verbose=0,
             validation_data=(scaled_test, scaled_test)
         )
         history = model_wrapper.fit(scaled_train, scaled_train)
 
         # Calculate score
-        score = history.history['val_mean_squared_error'][-10:]
+        score = history.history['val_mean_squared_error'][-20:]
         fold_score.append(np.mean(score))
 
         # Train Score
-        train_score = history.history['mean_squared_error'][-10:]
+        train_score = history.history['mean_squared_error'][-20:]
         fold_train_score.append(np.mean(train_score))
 
         # Clear Tensorflow graph
@@ -181,7 +181,7 @@ def save_configuration(
         The EMS model used to produce data.     
     """    
     # Get models directory path
-    src_dir = os.path.normpath(os.getcwd() + '/../..')
+    src_dir = os.path.normpath(os.getcwd() + '/..')
     model_dir = os.path.join(src_dir, 'models')
 
     # Create path to json file
@@ -208,10 +208,10 @@ def load_configuration(config_filename, scattering_model='spm'):
         Dictionary with model parameters as keys.      
     """    
     # Get models directory path
-    src_dir = os.path.normpath(os.getcwd() + '/../..')
+    src_dir = os.path.normpath(os.getcwd() + '/..')
     model_dir = os.path.join(src_dir, 'models') 
 
-    filename = f'{filename}_{scattering_model}.json'
+    filename = f'{config_filename}_{scattering_model}.json'
     json_path = os.path.join(model_dir, config_filename)
 
     with open(json_path, 'r') as file_:
