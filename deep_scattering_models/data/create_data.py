@@ -6,6 +6,7 @@ surfaces, calculated using small perturbation method."""
 import os
 
 import numpy as np
+import scipy
 
 from deep_scattering_models.small_perturbation_method.t_matrix import SpmSurface
 
@@ -143,16 +144,21 @@ def make_data(realizations=20480, noise=False, size=(45, 90), **kwargs):
 
         # Realization of surface and polarizarion signature
         surface = SpmSurface(**surf_parameters)
-        signature = surface.polarization_signature(
-            lambda_, 
-            theta,
-            phi,
-            wishard_noise=noise,
-            grid_size=size
-        )
+        try:
+            signature = surface.polarization_signature(
+                lambda_, 
+                theta,
+                phi,
+                wishard_noise=noise,
+                grid_size=size
+            )
+        except scipy.linalg.LinAlgError:
+            raise ValueError("La Matriz de Mueller no satisface las hipótesis "
+            f"de Cholesky para los parámetros \n {surf_parameters}")
 
-        # Stack result in data
-        data[i, :, :] = np.real(signature)
+        else:    
+            # Stack result in data
+            data[i, :, :] = np.real(signature)
 
     return data
 

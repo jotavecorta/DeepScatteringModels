@@ -26,8 +26,8 @@ def cwishrnd(M, looks_num=15):
     if n != m: 
         raise ValueError('Array shape mismatch. M must be a square array')
     
-    elif not(np.allclose(M, np.matrix(M).H, rtol=1e-05, atol=1e-08)):
-        raise ValueError('M must be hermitian')    
+    #elif not(np.allclose(M, np.matrix(M).H, rtol=1e-05, atol=1e-08)):
+    #    raise ValueError('M must be hermitian')    
     
     # Cholesky Decomposition and ...
     d = np.linalg.cholesky(M) 
