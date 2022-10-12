@@ -539,11 +539,11 @@ class SpmSurface:
 
         t_12 = s_hh + s_vv - 2j * np.imag(s_hh_vv)
 
-        t_13 = s_hh_hv + s_vv_hv
+        t_13 = 2 * (s_hh_hv + s_vv_hv)
 
         t_22 = s_hh + s_vv - 2 * np.real(s_hh_vv)
 
-        t_23 = s_hh_hv - s_vv_hv
+        t_23 = 2 * (s_hh_hv - s_vv_hv)
 
         t_33 = 4 * s_hv
 
@@ -555,9 +555,9 @@ class SpmSurface:
         t_32 = np.conj(t_23)
 
         # Add terms to first order T-Matrix
-        t_matrix = np.array([(t_11, t_12, t_13),
-                             (t_21, t_22, t_23),
-                             (t_31, t_32, t_33)])
+        t_matrix = .5 * np.array([(t_11, t_12, t_13),
+                                  (t_21, t_22, t_23),
+                                  (t_31, t_32, t_33)])
 
         return t_matrix
 
@@ -607,11 +607,11 @@ class SpmSurface:
 
             t_12 = s_hh + s_vv - 2j * np.imag(s_hh_vv)
 
-            t_13 = s_hh_hv + s_vv_hv
+            t_13 = 2 * (s_hh_hv + s_vv_hv)
 
             t_22 = s_hh + s_vv - 2 * np.real(s_hh_vv)
 
-            t_23 = s_hh_hv - s_vv_hv
+            t_23 = 2 * (s_hh_hv - s_vv_hv)
 
             t_33 = 4 * s_hv
 
@@ -623,10 +623,10 @@ class SpmSurface:
             t_32 = np.conj(t_23)
 
             # Add terms to first order T-Matrix
-            t_matrix += (np.array([(t_11, t_12, t_13),
-                                   (t_21, t_22, t_23),
-                                   (t_31, t_32, t_33)])
-                         )
+            t_matrix += .5 * (np.array([(t_11, t_12, t_13),
+                                        (t_21, t_22, t_23),
+                                        (t_31, t_32, t_33)])
+                                        )
 
         return k**2 * np.cos(theta_inc)**2 * t_matrix
 

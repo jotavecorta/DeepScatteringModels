@@ -4,7 +4,7 @@ from numpy.testing import assert_allclose
 
 import pytest
 
-from DLSM.geometric_optics_approx import integrals
+from deep_scattering_models.geometric_optics_approx import integrals
 
 THETA, PHI = np.meshgrid(
     np.linspace(1e-5, 90, 30) * np.pi / 180, np.linspace(0, 360, 30) * np.pi / 180

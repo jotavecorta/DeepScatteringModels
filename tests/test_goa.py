@@ -7,7 +7,7 @@ from numpy.testing import assert_allclose
 
 import pytest
 
-from DLSM.geometric_optics_approx import goa
+from deep_scattering_models.geometric_optics_approx import goa
 
 
 THETA, PHI = np.meshgrid(
