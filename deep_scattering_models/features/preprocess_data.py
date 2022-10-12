@@ -14,22 +14,47 @@ class RScaler(RobustScaler):
         super().__init__()
 
     def fit(self, X):
-        return super().fit(X.reshape(-1, X.shape[-1]), y=None)
+        return super().fit(X.reshape(X.shape[0], -1), y=None)
     
     def transform(self, X):
         X_shape = X.shape
-        scaled = super().transform(X.reshape(-1, X_shape[-1]))
+        scaled = super().transform(X.reshape(X.shape[0], -1))
         return scaled.reshape(X_shape)
 
     def fit_transform(self, X, **fit_params):
         X_shape = X.shape
-        transformed = super().fit_transform(X.reshape(-1, X_shape[-1]), y=None, **fit_params) 
+        transformed = super().fit_transform(X.reshape(X.shape[0], -1), y=None, **fit_params) 
         return transformed.reshape(X_shape) 
 
     def inverse_transform(self, X):
         X_shape = X.shape
-        unscaled = super().inverse_transform(X.reshape(-1, X_shape[-1]))  
+        unscaled = super().inverse_transform(X.reshape(X.shape[0], -1))  
         return unscaled.reshape(X_shape)  
+
+class RScaler_beta(RobustScaler):
+    """Robust Scaler ready to use with numpy.ndarrays of any
+     dimentions. Inherits from sklearn.preprocessing.RobustScaler.
+     """
+    def __init__(self):
+        super().__init__()
+
+    def fit(self, X):
+        return super().fit(X.reshape((-1, 1)), y=None)
+    
+    def transform(self, X):
+        X_shape = X.shape
+        scaled = super().transform(X.reshape((-1, 1)))
+        return scaled.reshape(X_shape)
+
+    def fit_transform(self, X, **fit_params):
+        X_shape = X.shape
+        transformed = super().fit_transform(X.reshape((-1, 1)), y=None, **fit_params) 
+        return transformed.reshape(X_shape) 
+
+    def inverse_transform(self, X):
+        X_shape = X.shape
+        unscaled = super().inverse_transform(X.reshape((-1, 1)))  
+        return unscaled.reshape(X_shape)        
 
 class MMScaler(MinMaxScaler):
     """MinMax Scaler ready to use with numpy.ndarrays of any
@@ -39,21 +64,21 @@ class MMScaler(MinMaxScaler):
         super().__init__()
 
     def fit(self, X):
-        return super().fit(X.reshape(-1, X.shape[-1]), y=None)
+        return super().fit(X.reshape((-1, 1)), y=None)
     
     def transform(self, X):
         X_shape = X.shape
-        scaled = super().transform(X.reshape(-1, X_shape[-1]))
+        scaled = super().transform(X.reshape((-1, 1)))
         return scaled.reshape(X_shape)
 
     def fit_transform(self, X, **fit_params):
         X_shape = X.shape
-        transformed = super().fit_transform(X.reshape(-1, X_shape[-1]), y=None, **fit_params) 
+        transformed = super().fit_transform(X.reshape((-1, 1)), y=None, **fit_params) 
         return transformed.reshape(X_shape)   
 
     def inverse_transform(self, X):
         X_shape = X.shape
-        unscaled = super().inverse_transform(X.reshape(-1, X_shape[-1]))  
+        unscaled = super().inverse_transform(X.reshape((-1, 1)))  
         return unscaled.reshape(X_shape)         
 
 def to_dB(data):

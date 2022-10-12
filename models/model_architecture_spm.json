@@ -35,7 +35,7 @@
         ],
         "dropout": true
     },
-    "batch_size": 16,
-    "score": 0.21541643649339673,
-    "train_score": 0.23770954638719557
+    "batch_size": 32,
+    "score": 0.2039342664927244,
+    "train_score": 0.22936312660574912
 }
