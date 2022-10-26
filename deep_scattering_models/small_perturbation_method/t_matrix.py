@@ -561,7 +561,15 @@ class SpmSurface:
 
         return t_matrix
 
-    def t_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **int_kw):
+    def t_matrix(
+        self, 
+        lambda_, 
+        theta_inc, 
+        phi_inc, 
+        second_order=True, 
+        noise=False, 
+        **int_kw
+        ):
         """Returns T-Matrix for one or two layer random rough surface
         scattering in SPM approximation, up to second order.
 
@@ -595,7 +603,8 @@ class SpmSurface:
         # Add second order terms
         if second_order:
             amps_dict = self._spm2_integration(
-                lambda_, theta_inc, phi_inc, **int_kw)
+                lambda_, theta_inc, phi_inc, **int_kw
+                )
 
             # Unpack amplitudes
             s_hh, s_vv, s_hh_vv = amps_dict['co-pol']
@@ -627,10 +636,20 @@ class SpmSurface:
                                         (t_21, t_22, t_23),
                                         (t_31, t_32, t_33)])
                                         )
+        if noise:
+            t_matrix = cwishrnd(t_matrix)                                
 
-        return k**2 * np.cos(theta_inc)**2 * t_matrix
+        return k**2 * np.cos(theta_inc) * t_matrix
 
-    def mueller_matrix(self, lambda_, theta_inc, phi_inc, second_order=True, **int_kw):
+    def mueller_matrix(
+        self, 
+        lambda_, 
+        theta_inc, 
+        phi_inc, 
+        second_order=True, 
+        noise=False, 
+        **int_kw
+        ):
         """Returns Mueller Matrix for one or two layer random rough surface
         scattering in SPM approximation, up to second order.
 
@@ -669,50 +688,36 @@ class SpmSurface:
         # Incident wave number
         k = 2 * np.pi / lambda_ 
 
-        # First order calculation 
-        s_matrix_dict = self._spm1_s_matrix(lambda_, theta_inc, phi_inc)
-
-        # Unpack amplitudes
-        s_hh, s_vv, s_hh_vv = s_matrix_dict['co-pol']
-        s_hv, s_hh_hv, s_vv_hv = s_matrix_dict['cross-pol']
-
-        # Second order
-        if second_order:
-            amps_dict = self._spm2_integration(
-                lambda_, theta_inc, phi_inc, **int_kw)
-
-            # Unpack amplitudes
-            s2_hh, s2_vv, s2_hh_vv = amps_dict['co-pol']
-            s2_hv, s2_hh_hv, s2_vv_hv = amps_dict['cross-pol']
-
-            # Add second order terms
-            s_hh += s2_hh
-            s_vv += s2_vv
-            s_hh_vv += s2_hh_vv
-            s_hv += s2_hv
-            s_hh_hv += s2_hh_hv
-            s_vv_hv += s2_vv_hv
+        # Coherence T-Matrix
+        T = self.t_matrix(
+            lambda_, 
+            theta_inc, 
+            phi_inc, 
+            second_order=second_order,
+            noise=noise,  
+            **int_kw
+            )
         
         # Upper Triangle
-        m_11 = 1/2 * (s_hh + s_vv + 2 * s_hv)
+        m_11 = 1/2 * np.trace(T)
 
-        m_12 = 1/2 * (s_hh - s_vv)
+        m_12 = np.real(T[0, 1])
         
-        m_13 = np.real(s_hh_hv + np.conj(s_vv_hv))
+        m_13 = 1/2 * np.real(T[0, 2] + T[1, 2] + T[2, 0] - T[2, 1])
 
-        m_14 = np.imag(s_hh_hv + np.conj(s_vv_hv))
+        m_14 = 1/2 * np.imag(T[0, 2] + T[1, 2] + T[2, 0] - T[2, 1])
         
-        m_22 = 1/2 * (s_hh + s_vv - 2 * s_hv)
+        m_22 = 1/2 * (T[0,0] + T[1,1] - T[2,2]) 
         
-        m_23 = np.real(s_hh_hv - np.conj(s_vv_hv))
+        m_23 = 1/2 * np.real(T[0, 2] + T[1, 2] - T[2, 0] + T[2, 1])
 
-        m_24 = np.imag(s_hh_hv - np.conj(s_vv_hv))
+        m_24 = 1/2 * np.imag(T[0, 2] + T[1, 2] - T[2, 0] + T[2, 1])
         
-        m_33 = (s_hv + np.real(s_hh_vv))
+        m_33 = 1/2 * (T[0,0] - T[1,1] + T[2,2])
 
-        m_34 = np.imag(s_hh_vv)
+        m_34 = - np.imag(T[0, 1])
 
-        m_44 = (-s_hv + np.real(s_hh_vv))                
+        m_44 = 1/2 * (T[0,0] - T[1,1] - T[2,2])                
 
         # Lower Triangle
         m_21 = m_12
@@ -724,13 +729,13 @@ class SpmSurface:
         m_42, m_43 = -m_24, -m_34
 
         # Mueller Matrix
-        m_matrix = (np.array([(m_11, m_12, m_13, m_14),
-                              (m_21, m_22, m_23, m_24),
-                              (m_31, m_32, m_33, m_34),
-                              (m_41, m_42, m_43, m_44)])
-                    )
+        m_matrix = 1/2 * (np.array([(m_11, m_12, m_13, m_14),
+                                    (m_21, m_22, m_23, m_24),
+                                    (m_31, m_32, m_33, m_34),
+                                    (m_41, m_42, m_43, m_44)])
+                                    )
 
-        return k**2 * np.cos(theta_inc)**2 * m_matrix
+        return m_matrix
 
     def polarization_signature(
         self,
@@ -785,12 +790,13 @@ class SpmSurface:
 
         # Mueller matrix
         m_matrix = self.mueller_matrix(
-            lambda_, theta_inc, phi_inc, second_order=second_order, **int_kw
+            lambda_, 
+            theta_inc, 
+            phi_inc, 
+            second_order=second_order, 
+            noise=wishard_noise, 
+            **int_kw
         )
-
-        # Add Noise
-        if wishard_noise:
-            m_matrix = cwishrnd(m_matrix)
 
         # Grid Size
         n_chi, n_psi = grid_size
