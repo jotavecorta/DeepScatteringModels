@@ -1,3 +1,4 @@
+#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 
@@ -179,39 +180,39 @@ class SpmSurface:
 
             # First layer
             # Co-pol amplitudes
-            f1_hh = L0_11HH(k, theta_s, phi_s, theta_inc,
-                            phi_inc, self.ep_1, self.ep_2, self.d) + \
-                L1_11HH(x, y, k, theta_s, phi_s, theta_inc,
-                        phi_inc, self.ep_1, self.ep_2, self.d)
+            f01_hh = L0_11HH(k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
+            f1_hh = L1_11HH(x, y, k, theta_s, phi_s, theta_inc,
+                            phi_inc, self.ep_1, self.ep_2, self.d)
 
-            f1_vv = L0_11VV(k, theta_s, phi_s, theta_inc,
-                            phi_inc, self.ep_1, self.ep_2, self.d) + \
-                L1_11VV(x, y, k, theta_s, phi_s, theta_inc,
-                        phi_inc, self.ep_1, self.ep_2, self.d)
+            f01_vv = L0_11VV(k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
+            f1_vv = L1_11VV(x, y, k, theta_s, phi_s, theta_inc,
+                            phi_inc, self.ep_1, self.ep_2, self.d)
 
             # Cross-pol amplitudes
-            f1_hv = L0_11HV(k, theta_s, phi_s, theta_inc,
-                            phi_inc, self.ep_1, self.ep_2, self.d) + \
-                L1_11HV(x, y, k, theta_s, phi_s, theta_inc,
-                        phi_inc, self.ep_1, self.ep_2, self.d)
+            f01_hv = L0_11HV(k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
+            f1_hv = L1_11HV(x, y, k, theta_s, phi_s, theta_inc,
+                            phi_inc, self.ep_1, self.ep_2, self.d)
 
             # Second Layer
             # Co-pol amplitudes
-            f2_hh = L0_22HH(k, theta_s, phi_s, theta_inc,
-                            phi_inc, self.ep_1, self.ep_2, self.d) + \
-                L1_22HH(x, y, k, theta_s, phi_s, theta_inc,
-                        phi_inc, self.ep_1, self.ep_2, self.d)
+            f02_hh = L0_22HH(k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
+            f2_hh = L1_22HH(x, y, k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
 
-            f2_vv = L0_22VV(k, theta_s, phi_s, theta_inc,
-                            phi_inc, self.ep_1, self.ep_2, self.d) + \
-                L1_22VV(x, y, k, theta_s, phi_s, theta_inc,
-                        phi_inc, self.ep_1, self.ep_2, self.d)
+            f02_vv = L0_22VV(k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
+            f2_vv = L1_22VV(x, y, k, theta_s, phi_s, theta_inc,
+                            phi_inc, self.ep_1, self.ep_2, self.d)
 
             # Cross-pol amplitudes
-            f2_hv = L0_22HV(k, theta_s, phi_s, theta_inc,
-                            phi_inc, self.ep_1, self.ep_2, self.d) + \
-                L1_22HV(x, y, k, theta_s, phi_s, theta_inc,
-                        phi_inc, self.ep_1, self.ep_2, self.d)
+            f02_hv = L0_22HV(k, theta_s, phi_s, theta_inc,
+                             phi_inc, self.ep_1, self.ep_2, self.d)
+            f2_hv = L1_22HV(x, y, k, theta_s, phi_s, theta_inc,
+                            phi_inc, self.ep_1, self.ep_2, self.d)
 
             # Interaction between layers
             # Co-pol amplitudes
@@ -226,10 +227,10 @@ class SpmSurface:
                         phi_inc, self.ep_1, self.ep_2, self.d)                                  
 
             return {
-                'first layer': {'co-pol': (f1_hh, f1_vv),
-                                'cross-pol': f1_hv},
-                'second layer': {'co-pol': (f2_hh, f2_vv),
-                                 'cross-pol': f2_hv},
+                'first layer': {'co-pol': (f01_hh, f01_vv, f1_hh, f1_vv),
+                                'cross-pol': (f01_hv, f1_hv)},
+                'second layer': {'co-pol': (f02_hh, f02_vv, f2_hh, f2_vv),
+                                 'cross-pol': (f02_hv, f2_hv)},
                 'interaction': {'co-pol': (f12_hh, f12_vv),
                                 'cross-pol': f12_hv}
             }
@@ -280,7 +281,8 @@ class SpmSurface:
 
         # Scattering Amplitudes
         amps = self._spm1_amplitudes(
-            lambda_, theta_inc, phi_inc)
+            lambda_, theta_inc, phi_inc
+            )
         f1_hh, f1_vv = amps['first layer']['co-pol']
 
         # First order S-Matrix coefficients
@@ -366,26 +368,26 @@ class SpmSurface:
                                  np.linspace(-lim*k, lim*k, n))
 
         # Wave vector components
-        k_x, k_y = np.sin(theta_inc) * \
-            np.cos(phi_inc), np.sin(theta_inc)*np.sin(phi_inc)
+        k_x, k_y =k * np.sin(theta_inc) * \
+            np.cos(phi_inc), k * np.sin(theta_inc)*np.sin(phi_inc)
 
-        k_sx, k_sy = np.sin(theta_s) * \
-            np.cos(phi_s), np.sin(theta_s)*np.cos(phi_s)
+        k_sx, k_sy = k * np.sin(theta_s) * \
+            np.cos(phi_s), k * np.sin(theta_s)*np.cos(phi_s)
 
 
         # Unpack amplitudes first layer
         # First term (evaluated on k')
         amps = self._spm2_amplitudes(lambda_, theta_inc, phi_inc, (kr_x, kr_y))
-        f1_hh, f1_vv = amps['first layer']['co-pol']
-        f1_hv = amps['first layer']['cross-pol']
+        f01_hh, f01_vv, f1_hh, f1_vv = amps['first layer']['co-pol']
+        f01_hv, f1_hv = amps['first layer']['cross-pol']
 
         # Second term (evaluated on k - k_i - k')
         amps_st = self._spm2_amplitudes(
             lambda_, theta_inc, phi_inc,
             (k_sx + k_x - kr_x, k_sy + k_y - kr_y)
         )
-        f1_hh_st, f1_vv_st = amps_st['first layer']['co-pol']
-        f1_hv_st = amps_st['first layer']['cross-pol']
+        _, _, f1_hh_st, f1_vv_st = amps_st['first layer']['co-pol']
+        _, f1_hv_st = amps_st['first layer']['cross-pol']
 
         # First layer Power Spectrum Density
         W_1 = w(self.acf, self.s_1, self.l_1, k_sx - kr_x, k_sy - kr_y) * \
@@ -394,27 +396,33 @@ class SpmSurface:
 
         # S matrix
         # Co-pol
-        S_hh = W_1 * (abs(f1_hh)**2 + f1_hh * np.conj(f1_hh_st))
+        S_hh = W_1 * (2 * f01_hh * np.conj(f1_hh + f01_hh) +
+                      (f01_hh + f1_hh) * np.conj(f1_hh + f1_hh_st))
 
-        S_vv = W_1 * (abs(f1_vv)**2 + f1_vv * np.conj(f1_vv_st))
+        S_vv = W_1 * (2 * f01_vv * np.conj(f1_vv + f01_vv) +
+                      (f01_vv + f1_vv) * np.conj(f1_vv + f1_vv_st))
 
-        S_hh_S_vv = W_1 * (f1_hh * np.conj(f1_vv) + f1_hh * np.conj(f1_vv_st))
+        S_hh_S_vv = W_1 * (2 * (f01_hh + f1_hh) * np.conj(f01_vv) +
+                           (f01_hh + f1_hh) * np.conj(f1_vv + f1_vv_st))
 
         # Cross-pol
-        S_hv = W_1 * (abs(f1_hv)**2 + f1_hv * np.conj(f1_hv_st))
+        S_hv = W_1 * (2 * f01_hv * np.conj(f1_hv + f01_hv) +
+                      (f01_hv + f1_hv) * np.conj(f1_hv + f1_hv_st))
 
-        S_hh_S_hv = W_1 * (f1_hh * np.conj(f1_hv) + f1_hh * np.conj(f1_hv_st))
+        S_hh_S_hv = W_1 * (2 * (f01_hh + f1_hh) * np.conj(f01_hv) +
+                           (f01_hh + f1_hh) * np.conj(f1_hv + f1_hv_st))
 
-        S_vv_S_hv = W_1 * (f1_vv * np.conj(f1_hv) + f1_vv * np.conj(f1_hv_st))
+        S_vv_S_hv = W_1 * (2 * (f01_vv + f1_vv) * np.conj(f01_hv) +
+                           (f01_vv + f1_vv) * np.conj(f1_hv + f1_hv_st))
 
         if self.two_layer:
 
             # Second layer amplitudes
-            f2_hh, f2_vv = amps['second layer']['co-pol']
-            f2_hv = amps['second layer']['cross-pol']
+            f02_hh, f02_vv, f2_hh, f2_vv = amps['second layer']['co-pol']
+            f02_hv, f2_hv = amps['second layer']['cross-pol']
 
-            f2_hh_st, f2_vv_st = amps_st['second layer']['co-pol']
-            f2_hv_st = amps_st['second layer']['cross-pol']
+            _, _, f2_hh_st, f2_vv_st = amps_st['second layer']['co-pol']
+            _, f2_hv_st = amps_st['second layer']['cross-pol']
 
             f12_hh, f12_vv = amps['interaction']['co-pol']
             f12_hv = amps['interaction']['cross-pol']
@@ -433,24 +441,30 @@ class SpmSurface:
 
 
             # Co-pol Elements
-            S_hh += W_2 * (abs(f2_hh)**2 + f2_hh * np.conj(f2_hh_st)) + \
-                    W_12 * (abs(f12_hh)**2 + f12_hh * np.conj(f12_hh_st))
+            S_hh += W_2 * (2 * f02_hh * np.conj(f2_hh + f02_hh) +
+                           (f02_hh + f2_hh) * np.conj(f2_hh + f2_hh_st)) + \
+                    W_12 * (f12_hh * np.conj(f12_hh + f12_hh_st))
 
-            S_vv += W_2 * (abs(f2_vv)**2 + f2_vv * np.conj(f2_vv_st)) + \
-                    W_12 * (abs(f12_vv)**2 + f12_vv * np.conj(f12_vv_st))
+            S_vv += W_2 * (2 * f02_vv * np.conj(f2_vv + f02_vv) +
+                           (f02_vv + f2_vv) * np.conj(f2_vv + f2_vv_st)) + \
+                    W_12 * (f12_vv * np.conj(f12_vv + f12_vv_st))
 
-            S_hh_S_vv += W_2 * (f2_hh * np.conj(f2_vv) + f2_hh * np.conj(f2_vv_st)) + \
-                         W_12 * (f12_hh * np.conj(f12_vv) + f12_hh * np.conj(f12_vv_st))
+            S_hh_S_vv += W_2 * (2 * (f02_hh + f2_hh) * np.conj(f02_vv) +
+                                (f02_hh + f2_hh) * np.conj(f2_vv + f2_vv_st)) + \
+                        W_12 * (f12_hh * np.conj(f12_vv + f12_vv_st))
 
             # Cross-pol Elements
-            S_hv += W_2 * (abs(f2_hv)**2 + f2_hv * np.conj(f2_hv_st)) + \
-                    W_12 * (abs(f12_hv)**2 + f12_hv * np.conj(f12_hv_st))
+            S_hv += W_2 * (2 * f02_hv * np.conj(f2_hv + f02_hv) +
+                           (f02_hv + f2_hv) * np.conj(f2_hv + f2_hv_st)) + \
+                    W_12 * (f12_hv * np.conj(f12_hv + f12_hv_st))
 
-            S_hh_S_hv += W_2 * (f2_hh * np.conj(f2_hv) + f2_hh * np.conj(f2_hv_st)) + \
+            S_hh_S_hv += W_2 * (2 * (f02_hh + f2_hh) * np.conj(f02_hv) +
+                                (f02_hh + f2_hh) * np.conj(f2_hv + f2_hv_st))+ \
                          W_12 * (f12_hh * np.conj(f12_hv) + f12_hh * np.conj(f12_hv_st))
 
-            S_vv_S_hv += W_2 * (f2_vv * np.conj(f2_hv) + f2_vv * np.conj(f2_hv_st)) + \
-                         W_12 * (f12_vv * np.conj(f12_hv) + f12_vv * np.conj(f12_hv_st))
+            S_vv_S_hv += W_2 * (2 * (f01_vv + f1_vv) * np.conj(f01_hv) +
+                                (f01_vv + f1_vv) * np.conj(f1_hv + f1_hv_st)) + \
+                         W_12 * (f12_vv * np.conj(f12_hv + f12_hv_st))
 
         return {
             'co-pol': (S_hh, S_vv, S_hh_S_vv),
@@ -639,7 +653,7 @@ class SpmSurface:
         if noise:
             t_matrix = cwishrnd(t_matrix)                                
 
-        return k**2 * np.cos(theta_inc) * t_matrix
+        return k**2 * np.cos(theta_inc)**2 * t_matrix
 
     def mueller_matrix(
         self, 
@@ -699,7 +713,7 @@ class SpmSurface:
             )
         
         # Upper Triangle
-        m_11 = 1/2 * np.trace(T)
+        m_11 = 1/2 * (T[0,0] + T[1,1] + T[2,2])
 
         m_12 = np.real(T[0, 1])
         
@@ -732,10 +746,9 @@ class SpmSurface:
         m_matrix = 1/2 * (np.array([(m_11, m_12, m_13, m_14),
                                     (m_21, m_22, m_23, m_24),
                                     (m_31, m_32, m_33, m_34),
-                                    (m_41, m_42, m_43, m_44)])
-                                    )
+                                    (m_41, m_42, m_43, m_44)]))
 
-        return m_matrix
+        return np.real(m_matrix)
 
     def polarization_signature(
         self,
@@ -823,4 +836,4 @@ class SpmSurface:
 
         sigma = 4 * np.pi/k**2 * dot_product  
 
-        return sigma     
+        return sigma   
