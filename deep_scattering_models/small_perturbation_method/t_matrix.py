@@ -249,8 +249,8 @@ class SpmSurface:
                              theta_s, phi_s, self.ep_1)
 
             return {
-                'first layer': {'co-pol': (f1_hh, f1_vv),
-                                'cross-pol': f1_hv}
+                'first layer': {'co-pol': (0, 0, f1_hh, f1_vv),
+                                'cross-pol': (0, f1_hv)}
             }
 
     def _spm1_s_matrix(self, lambda_, theta_inc, phi_inc):
@@ -396,24 +396,34 @@ class SpmSurface:
 
         # S matrix
         # Co-pol
-        S_hh = W_1 * (2 * f01_hh * np.conj(f1_hh + f01_hh) +
-                      (f01_hh + f1_hh) * np.conj(f1_hh + f1_hh_st))
+        S_hh = W_1 * (2 * np.abs(f01_hh) ** 2 +
+                      2 * np.real(f01_hh * np.conj(f1_hh + f1_hh_st)) +
+                      f1_hh * np.conj(f1_hh + f1_hh_st))
 
-        S_vv = W_1 * (2 * f01_vv * np.conj(f1_vv + f01_vv) +
-                      (f01_vv + f1_vv) * np.conj(f1_vv + f1_vv_st))
+        S_vv = W_1 * (2 * np.abs(f01_vv) ** 2 +
+                      2 * np.real(f01_vv * np.conj(f1_vv + f1_vv_st)) +
+                      f1_vv * np.conj(f1_vv + f1_vv_st))
 
-        S_hh_S_vv = W_1 * (2 * (f01_hh + f1_hh) * np.conj(f01_vv) +
-                           (f01_hh + f1_hh) * np.conj(f1_vv + f1_vv_st))
+
+        S_hh_S_vv = W_1 * (2 * f01_hh * np.conj(f01_vv) +
+                           f01_hh * np.conj(f1_vv + f1_vv_st) +
+                           f01_vv * np.conj(f1_hh + f1_hh_st) +
+                           f1_hh * np.conj(f1_vv + f1_vv_st))
 
         # Cross-pol
-        S_hv = W_1 * (2 * f01_hv * np.conj(f1_hv + f01_hv) +
-                      (f01_hv + f1_hv) * np.conj(f1_hv + f1_hv_st))
+        S_hv = W_1 * (2 * np.abs(f01_hv) ** 2 +
+                      2 * np.real(f01_hv * np.conj(f1_hv + f1_hv_st)) +
+                      f1_hv * np.conj(f1_hv + f1_hv_st))
 
-        S_hh_S_hv = W_1 * (2 * (f01_hh + f1_hh) * np.conj(f01_hv) +
-                           (f01_hh + f1_hh) * np.conj(f1_hv + f1_hv_st))
+        S_hh_S_hv = W_1 * (2 * f01_hh * np.conj(f01_hv) +
+                           f01_hh * np.conj(f1_hv + f1_hv_st) +
+                           f01_hv * np.conj(f1_hh + f1_hh_st) +
+                           f1_hh * np.conj(f1_hv + f1_hv_st))
 
-        S_vv_S_hv = W_1 * (2 * (f01_vv + f1_vv) * np.conj(f01_hv) +
-                           (f01_vv + f1_vv) * np.conj(f1_hv + f1_hv_st))
+        S_vv_S_hv = W_1 * (2 * f01_vv * np.conj(f01_hv) +
+                           f01_vv * np.conj(f1_hv + f1_hv_st) +
+                           f01_hv * np.conj(f1_vv + f1_vv_st) +
+                           f1_vv * np.conj(f1_hv + f1_hv_st))
 
         if self.two_layer:
 
@@ -441,29 +451,38 @@ class SpmSurface:
 
 
             # Co-pol Elements
-            S_hh += W_2 * (2 * f02_hh * np.conj(f2_hh + f02_hh) +
-                           (f02_hh + f2_hh) * np.conj(f2_hh + f2_hh_st)) + \
-                    W_12 * (f12_hh * np.conj(f12_hh + f12_hh_st))
+            S_hh += W_2 * (2 * np.abs(f02_hh) ** 2 +
+                           2 * np.real(f02_hh * np.conj(f2_hh + f2_hh_st)) +
+                           f2_hh * np.conj(f2_hh + f2_hh_st)) + \
+                W_12 * (f12_hh * np.conj(f12_hh + f12_hh_st))
 
-            S_vv += W_2 * (2 * f02_vv * np.conj(f2_vv + f02_vv) +
-                           (f02_vv + f2_vv) * np.conj(f2_vv + f2_vv_st)) + \
+            S_vv += W_2 * (2 * np.abs(f02_vv) ** 2 +
+                           2 * np.real(f02_vv * np.conj(f2_vv + f2_vv_st)) +
+                           f2_vv * np.conj(f2_vv + f2_vv_st)) + \
                     W_12 * (f12_vv * np.conj(f12_vv + f12_vv_st))
 
-            S_hh_S_vv += W_2 * (2 * (f02_hh + f2_hh) * np.conj(f02_vv) +
-                                (f02_hh + f2_hh) * np.conj(f2_vv + f2_vv_st)) + \
+            S_hh_S_vv += W_2 * (2 * f02_hh * np.conj(f02_vv) +
+                                f02_hh * np.conj(f2_vv + f2_vv_st) +
+                                f02_vv * np.conj(f2_hh + f2_hh_st) +
+                                f2_hh * np.conj(f1_vv + f2_vv_st)) + \
                         W_12 * (f12_hh * np.conj(f12_vv + f12_vv_st))
 
             # Cross-pol Elements
-            S_hv += W_2 * (2 * f02_hv * np.conj(f2_hv + f02_hv) +
-                           (f02_hv + f2_hv) * np.conj(f2_hv + f2_hv_st)) + \
+            S_hv += W_2 * (2 * np.abs(f02_hv) ** 2 +
+                           2 * np.real(f02_hv * np.conj(f2_hv + f2_hv_st)) +
+                           f2_hv * np.conj(f2_hv + f2_hv_st)) + \
                     W_12 * (f12_hv * np.conj(f12_hv + f12_hv_st))
 
-            S_hh_S_hv += W_2 * (2 * (f02_hh + f2_hh) * np.conj(f02_hv) +
-                                (f02_hh + f2_hh) * np.conj(f2_hv + f2_hv_st))+ \
+            S_hh_S_hv += W_2 * (2 * f02_hh * np.conj(f02_hv) +
+                                f02_hh * np.conj(f2_hv + f2_hv_st) +
+                                f02_hv * np.conj(f2_hh + f2_hh_st) +
+                                f2_hh * np.conj(f2_hv + f2_hv_st)) + \
                          W_12 * (f12_hh * np.conj(f12_hv) + f12_hh * np.conj(f12_hv_st))
 
-            S_vv_S_hv += W_2 * (2 * (f01_vv + f1_vv) * np.conj(f01_hv) +
-                                (f01_vv + f1_vv) * np.conj(f1_hv + f1_hv_st)) + \
+            S_vv_S_hv += W_2 * (2 * f02_vv * np.conj(f02_hv) +
+                                f02_vv * np.conj(f2_hv + f2_hv_st) +
+                                f02_hv * np.conj(f2_vv + f2_vv_st) +
+                                f2_vv * np.conj(f2_hv + f2_hv_st)) + \
                          W_12 * (f12_vv * np.conj(f12_hv + f12_hv_st))
 
         return {
@@ -731,7 +750,7 @@ class SpmSurface:
 
         m_34 = - np.imag(T[0, 1])
 
-        m_44 = 1/2 * (T[0,0] - T[1,1] - T[2,2])                
+        m_44 = 1/2 * (-T[0,0] + T[1,1] + T[2,2])                
 
         # Lower Triangle
         m_21 = m_12
