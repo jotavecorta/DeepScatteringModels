@@ -37,7 +37,7 @@ def plot_polarization_signature(sigma, ax=None, plot_kw=None):
     fig = ax.get_figure()
     fig.colorbar(c, ax=ax)
 
-    fig.set_figheight(8)
+    fig.set_figheight(6)
     fig.set_figwidth(10)
 
     return ax

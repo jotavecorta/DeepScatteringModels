@@ -158,7 +158,7 @@ def make_data(realizations=20480, noise=False, size=(45, 90), **kwargs):
 
         else:    
             # Stack result in data
-            data[i, :, :] = np.real(signature)
+            data[i, :, :] = signature
 
     return data
 
