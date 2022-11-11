@@ -313,7 +313,7 @@ class SpmSurface:
 
             # First order S-Matrix coefficients
             # Co-pol
-            S_hh += W_2 * (np.abs(f2_hh) ** 2)
+            S_hh += W_2 * (np.abs(f2_hh) ** 2) 
 
             S_vv += W_2 * (np.abs(f2_vv) ** 2)
 
@@ -407,7 +407,7 @@ class SpmSurface:
 
         S_hh_S_vv = W_1 * (2 * f01_hh * np.conj(f01_vv) +
                            f01_hh * np.conj(f1_vv + f1_vv_st) +
-                           f01_vv * np.conj(f1_hh + f1_hh_st) +
+                           np.conj(f01_vv) * (f1_hh + f1_hh_st) +
                            f1_hh * np.conj(f1_vv + f1_vv_st))
 
         # Cross-pol
@@ -417,12 +417,12 @@ class SpmSurface:
 
         S_hh_S_hv = W_1 * (2 * f01_hh * np.conj(f01_hv) +
                            f01_hh * np.conj(f1_hv + f1_hv_st) +
-                           f01_hv * np.conj(f1_hh + f1_hh_st) +
+                           np.conj(f01_hv) * (f1_hh + f1_hh_st) +
                            f1_hh * np.conj(f1_hv + f1_hv_st))
 
         S_vv_S_hv = W_1 * (2 * f01_vv * np.conj(f01_hv) +
                            f01_vv * np.conj(f1_hv + f1_hv_st) +
-                           f01_hv * np.conj(f1_vv + f1_vv_st) +
+                           np.conj(f01_hv) * (f1_vv + f1_vv_st) +
                            f1_vv * np.conj(f1_hv + f1_hv_st))
 
         if self.two_layer:
@@ -454,16 +454,16 @@ class SpmSurface:
             S_hh += W_2 * (2 * np.abs(f02_hh) ** 2 +
                            2 * np.real(f02_hh * np.conj(f2_hh + f2_hh_st)) +
                            f2_hh * np.conj(f2_hh + f2_hh_st)) + \
-                W_12 * (f12_hh * np.conj(f12_hh + f12_hh_st))
+                   W_12 * (f12_hh * np.conj(f12_hh + f12_hh_st))
 
             S_vv += W_2 * (2 * np.abs(f02_vv) ** 2 +
                            2 * np.real(f02_vv * np.conj(f2_vv + f2_vv_st)) +
                            f2_vv * np.conj(f2_vv + f2_vv_st)) + \
-                    W_12 * (f12_vv * np.conj(f12_vv + f12_vv_st))
+                   W_12 * (f12_vv * np.conj(f12_vv + f12_vv_st))
 
             S_hh_S_vv += W_2 * (2 * f02_hh * np.conj(f02_vv) +
                                 f02_hh * np.conj(f2_vv + f2_vv_st) +
-                                f02_vv * np.conj(f2_hh + f2_hh_st) +
+                                np.conj(f02_vv) * (f2_hh + f2_hh_st) +
                                 f2_hh * np.conj(f1_vv + f2_vv_st)) + \
                         W_12 * (f12_hh * np.conj(f12_vv + f12_vv_st))
 
@@ -471,19 +471,19 @@ class SpmSurface:
             S_hv += W_2 * (2 * np.abs(f02_hv) ** 2 +
                            2 * np.real(f02_hv * np.conj(f2_hv + f2_hv_st)) +
                            f2_hv * np.conj(f2_hv + f2_hv_st)) + \
-                    W_12 * (f12_hv * np.conj(f12_hv + f12_hv_st))
+                   W_12 * (f12_hv * np.conj(f12_hv + f12_hv_st))
 
             S_hh_S_hv += W_2 * (2 * f02_hh * np.conj(f02_hv) +
                                 f02_hh * np.conj(f2_hv + f2_hv_st) +
-                                f02_hv * np.conj(f2_hh + f2_hh_st) +
+                                np.conj(f02_hv) * (f2_hh + f2_hh_st) +
                                 f2_hh * np.conj(f2_hv + f2_hv_st)) + \
-                         W_12 * (f12_hh * np.conj(f12_hv) + f12_hh * np.conj(f12_hv_st))
+                        W_12 * (f12_hh * np.conj(f12_hv) + f12_hh * np.conj(f12_hv_st))
 
             S_vv_S_hv += W_2 * (2 * f02_vv * np.conj(f02_hv) +
                                 f02_vv * np.conj(f2_hv + f2_hv_st) +
-                                f02_hv * np.conj(f2_vv + f2_vv_st) +
+                                np.conj(f02_hv) * (f2_vv + f2_vv_st) +
                                 f2_vv * np.conj(f2_hv + f2_hv_st)) + \
-                         W_12 * (f12_vv * np.conj(f12_hv + f12_hv_st))
+                        W_12 * (f12_vv * np.conj(f12_hv + f12_hv_st))
 
         return {
             'co-pol': (S_hh, S_vv, S_hh_S_vv),
@@ -672,7 +672,7 @@ class SpmSurface:
         if noise:
             t_matrix = cwishrnd(t_matrix)                                
 
-        return k**2 * np.cos(theta_inc)**2 * t_matrix
+        return 4 * np.pi * k**2 * np.cos(theta_inc)**2 * t_matrix
 
     def mueller_matrix(
         self, 

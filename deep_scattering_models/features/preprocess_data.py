@@ -107,21 +107,28 @@ def remove_outliers(data, k=1.5):
         shape (n_samples_no_ouliers, 45, 90).             
     """    
     shape = data.shape
+    
+    # Delete entries with negative data
+    reshaped_data = np.reshape(data, (shape[0], -1))
+    reshaped_data = reshaped_data[np.all(reshaped_data>=0.0, axis=1)]
 
     # Calculation of quartiles an interquartil range
-    first_quartile = np.quantile(data, .25)
-    third_quartile = np.quantile(data, .75)
+    first_quartile = np.quantile(reshaped_data, .25)
+    third_quartile = np.quantile(reshaped_data, .75)
     iqr = third_quartile - first_quartile
 
     # Make a mask to filter samples
     upper_bound = np.all(
-        np.reshape(data, (shape[0], -1)) < third_quartile + k * iqr, 
+        reshaped_data < third_quartile + k * iqr, 
         axis=1
         )
+
     lower_bound = np.all(
-        np.reshape(data, (shape[0], -1)) > first_quartile - k * iqr,
+        reshaped_data > first_quartile - k * iqr,
         axis=1
     )    
+
     mask = np.logical_and(lower_bound, upper_bound)
     
-    return np.reshape(data[mask], (-1, shape[1], shape[2]))       
+    return np.reshape(reshaped_data[mask], (-1, shape[1], shape[2]))       
+
