@@ -83,8 +83,8 @@ class MMScaler(MinMaxScaler):
 
 def to_dB(data):
     # Replace zeros to take log    
-    no_zeros_data = np.where(data>0.0, data, np.quantile(data[data>0.0], .005))
-
+    no_zeros_data = np.where(data>0.0, data, data[data>0.0].min())
+    
     return 10*np.log10(no_zeros_data)
 
 def remove_outliers(data, k=1.5):
