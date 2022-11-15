@@ -16,26 +16,16 @@
                     3
                 ],
                 1
-            ],
-            [
-                4,
-                [
-                    3,
-                    3
-                ],
-                1
             ]
         ],
-        "max_pooling": true,
         "kernel_initializer": "glorot_uniform"
     },
     "dense_layers_config": {
         "layers_units": [
             256
-        ],
-        "dropout": true
+        ]
     },
-    "batch_size": 32,
-    "score": 0.2039342664927244,
-    "train_score": 0.22936312660574912
+    "batch_size": 16,
+    "score": 0.0007733281282708049,
+    "train_score": 0.0008036388392793015
 }

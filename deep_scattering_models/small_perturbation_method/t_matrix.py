@@ -1,4 +1,3 @@
-#%%
 """Module for 'T' Scatering Matrix calculation using Small Perturbation
 Method (SPM) approximation, for one and two rough surface stacked. 
 
@@ -19,7 +18,7 @@ from .spm1 import w
 from .spm2 import L0_11HH, L0_11HV, L0_11VV, L0_22HH, L0_22HV, L0_22VV
 from .spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
 from .spm2 import L1_12HH, L1_12HV, L1_12VV
-#%%
+
 from deep_scattering_models.utils import cwishrnd
 
 class SpmSurface:
@@ -857,4 +856,3 @@ class SpmSurface:
 
         return sigma   
 
-# %%

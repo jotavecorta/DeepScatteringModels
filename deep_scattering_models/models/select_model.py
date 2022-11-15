@@ -45,7 +45,7 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
     fold_score = []
     fold_train_score = []
 
-    for train_index, test_index in cv.split(data[:5000]):
+    for train_index, test_index in cv.split(data[:4000]):
         # Split into train and test
         train_set, test_set = data[train_index], data[test_index]
         
