@@ -9,6 +9,7 @@ November 1999.
 All calculations are made for backscattering angle.
 
 """
+#%%
 import numpy as np
 from scipy.integrate import simpson
 
@@ -18,8 +19,8 @@ from .spm1 import w
 from .spm2 import L0_11HH, L0_11HV, L0_11VV, L0_22HH, L0_22HV, L0_22VV
 from .spm2 import L1_11HH, L1_11HV, L1_11VV, L1_22HH, L1_22VV, L1_22HV
 from .spm2 import L1_12HH, L1_12HV, L1_12VV
-
-from deep_scattering_models.utils import cwishrnd
+#%%
+from deep_scattering_models.utils import cwishrnd, real_diagonal
 
 class SpmSurface:
     """Generates a one, or two, layer random rough surface with specified 
@@ -668,8 +669,10 @@ class SpmSurface:
                                         (t_21, t_22, t_23),
                                         (t_31, t_32, t_33)])
                                         )
-        if noise:
-            t_matrix = cwishrnd(t_matrix)                                
+        if noise:            
+            t_matrix = cwishrnd(
+                real_diagonal(t_matrix)
+                )                                
 
         return 4 * np.pi * k**2 * np.cos(theta_inc)**2 * t_matrix
 
@@ -856,3 +859,6 @@ class SpmSurface:
 
         return sigma   
 
+
+
+# %%

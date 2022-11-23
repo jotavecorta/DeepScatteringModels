@@ -48,3 +48,25 @@ def cwishrnd(M, looks_num=15):
           'Number of looks "look_num" must not exceed number of rows in '
           f'M plus {MAX_LOOKS}: {MAX_LOOKS + n}'
           )
+
+
+def real_diagonal(matrix):
+    """Eliminates imaginary part of matrix diagonal
+    
+    Parameters
+    ----------
+    matrix : ``numpy.ndarray``
+        Square complex array with nonzero imaginary
+        part on diagonal elements.
+
+    Returns
+    -------
+    ``numpy.ndarray`` 
+        Same array as input but with no imaginary part
+        on diagonal elements.   
+    """
+    imag_part = 1j*np.imag(
+        np.diag(np.diagonal(matrix))
+    )
+
+    return matrix - imag_part

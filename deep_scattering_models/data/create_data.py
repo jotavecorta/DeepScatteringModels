@@ -4,6 +4,7 @@ in train and evaluation of unsupervised deep learning models.
 Generated data is composed of polarimetric signatures of random rough
 surfaces, calculated using small perturbation method."""
 import os
+from warnings import warn
 
 import numpy as np
 import scipy
@@ -153,9 +154,11 @@ def make_data(realizations=20480, noise=False, size=(45, 90), **kwargs):
                 grid_size=size
             )
         except scipy.linalg.LinAlgError:
-            raise ValueError("La Matriz de Mueller no satisface las hipótesis "
-            f"de Cholesky para los parámetros \n {surf_parameters}")
-
+            warn(
+                "La Matriz T no satisface las hipótesis "
+                f"de Cholesky para los parámetros \n {surf_parameters}", 
+                RuntimeWarning
+            )
         else:    
             # Stack result in data
             data[i, :, :] = signature
