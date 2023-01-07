@@ -110,7 +110,7 @@ def remove_outliers(data, k=1.5):
     
     # Delete entries with negative data
     reshaped_data = np.reshape(data, (shape[0], -1))
-    reshaped_data = reshaped_data[np.all(reshaped_data>=0.0, axis=1)]
+    reshaped_data = reshaped_data[np.all(reshaped_data>=-1e-2, axis=1)]
 
     # Calculation of quartiles an interquartil range
     first_quartile = np.quantile(reshaped_data, .25)
