@@ -3,11 +3,14 @@ import warnings
 
 import numpy as np
 import tensorflow as tf
-from tensorflow.keras.models import Model
+from tensorflow.keras.models import Model, load_model
 from tensorflow.keras import layers
 from tensorflow.python.util import deprecation
 
-from deep_scattering_models.models.select_model import save_configuration
+from deep_scattering_models.models.select_model import (
+    save_configuration, 
+    load_configuration
+    )
 
 # Config tf verbosesity
 tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
@@ -209,3 +212,31 @@ def save_model(model, configuration_dict, name="cae"):
         )  
 
     print(f"Model and weights saved at {model_path}")
+
+
+def load_cae_model(name="cae"):
+    """Saves a model configuration as a json file.
+
+    Parameters
+    ----------
+    configuration_dict : ``dict``
+        Dictionary with model parameters as keys.
+    filename : ``str``, default: 'model_configuration'       
+        Name of the file.    
+    """   
+    # Get models directory path
+    src_dir = os.path.normpath(os.getcwd() + "/../..")
+    model_dir = os.path.join(src_dir, f"model")
+    
+    # Save model and weights into hdf5 file
+    model_filename = f"{name}_model_weights.h5"
+    model_path = os.path.join(model_dir, model_filename)
+    model = load_model(model_path)
+
+    # Save configuration into json file
+    config_filename = f"{name}_configuration"
+    configuration_dict = load_configuration( 
+        filename=config_filename
+        )  
+
+    return model, configuration_dict
