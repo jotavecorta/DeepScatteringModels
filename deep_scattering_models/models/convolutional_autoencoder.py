@@ -196,8 +196,8 @@ def save_model(model, configuration_dict, name="cae"):
         Name of the file.    
     """   
     # Get models directory path
-    src_dir = os.path.normpath(os.getcwd() + "/../..")
-    model_dir = os.path.join(src_dir, f"model")
+    src_dir = os.path.normpath(os.getcwd() + "/..")
+    model_dir = os.path.join(src_dir, f"models")
     
     # Save model and weights into hdf5 file
     model_filename = f"{name}_model_weights"
@@ -225,8 +225,8 @@ def load_cae_model(name="cae"):
         Name of the file.    
     """   
     # Get models directory path
-    src_dir = os.path.normpath(os.getcwd() + "/../..")
-    model_dir = os.path.join(src_dir, f"model")
+    src_dir = os.path.normpath(os.getcwd() + "/../")
+    model_dir = os.path.join(src_dir, f"models")
     
     # Load model and weights 
     model_filename = f"{name}_model_weights"
@@ -236,7 +236,7 @@ def load_cae_model(name="cae"):
     # Load configuration from json file
     config_filename = f"{name}_configuration"
     configuration_dict = load_configuration( 
-        filename=config_filename
+        config_filename=config_filename
         )  
 
     return model, configuration_dict

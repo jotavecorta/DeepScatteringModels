@@ -82,6 +82,8 @@ venv.bak/
 # Big sized numpy arrays and Models pkls
 *.npy
 *.pkl
+*.pb
+variables.*
 
 # Others
 # mypy
