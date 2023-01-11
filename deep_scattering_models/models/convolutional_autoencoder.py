@@ -200,9 +200,9 @@ def save_model(model, configuration_dict, name="cae"):
     model_dir = os.path.join(src_dir, f"model")
     
     # Save model and weights into hdf5 file
-    model_filename = f"{name}_model_weights.h5"
+    model_filename = f"{name}_model_weights"
     model_path = os.path.join(model_dir, model_filename)
-    model.save(model_path)
+    model.save(model_path, save_format='tf')
 
     # Save configuration into json file
     config_filename = f"{name}_configuration"
@@ -228,12 +228,12 @@ def load_cae_model(name="cae"):
     src_dir = os.path.normpath(os.getcwd() + "/../..")
     model_dir = os.path.join(src_dir, f"model")
     
-    # Save model and weights into hdf5 file
-    model_filename = f"{name}_model_weights.h5"
+    # Load model and weights 
+    model_filename = f"{name}_model_weights"
     model_path = os.path.join(model_dir, model_filename)
     model = load_model(model_path)
 
-    # Save configuration into json file
+    # Load configuration from json file
     config_filename = f"{name}_configuration"
     configuration_dict = load_configuration( 
         filename=config_filename

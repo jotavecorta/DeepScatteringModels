@@ -45,7 +45,14 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
     fold_score = []
     fold_train_score = []
 
-    for train_index, test_index in cv.split(data[:4000]):
+    # Keep only 4k samples to avoide Resourse Exahusted Error
+    treshold = 4000
+    
+    if (len(data) > treshold):
+        # Asumes data is shuffled
+        data = data[:4000]
+
+    for train_index, test_index in cv.split(data):
         # Split into train and test
         train_set, test_set = data[train_index], data[test_index]
         
@@ -62,18 +69,18 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
         model_wrapper = KerasRegressor(
             model_creator,
             **configuration,
-            epochs=60,
+            epochs=80,
             verbose=0,
             validation_data=(scaled_test, scaled_test)
         )
         history = model_wrapper.fit(scaled_train, scaled_train)
 
         # Calculate score
-        score = history.history['val_mean_squared_error'][-10:]
+        score = history.history['val_mean_squared_error'][-15:]
         fold_score.append(np.mean(score))
 
         # Train Score
-        train_score = history.history['mean_squared_error'][-10:]
+        train_score = history.history['mean_squared_error'][-15:]
         fold_train_score.append(np.mean(train_score))
 
         # Clear Tensorflow graph
