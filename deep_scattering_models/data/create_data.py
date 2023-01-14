@@ -32,7 +32,6 @@ def init_parameters_grid(grid_length=35):
     distance = np.linspace(0.1, 0.7, grid_length)
     rms_high1 = np.linspace(0.004, 0.012, grid_length)
     rms_high2 = np.linspace(0.004, 0.012, grid_length)
-    corr_length1, corr_length2 = 6 * rms_high1, 6 * rms_high2
 
     # Layers 1 and 2 Dielectric Constant
     init_epsilon = 3
@@ -43,11 +42,9 @@ def init_parameters_grid(grid_length=35):
 
     space_grid = {
         "rms_high": rms_high1,
-        "corr_length": corr_length1,
         "epsilon": epsilon1,
         "epsilon_2": epsilon2,
         "rms_high_2": rms_high2,
-        "corr_length_2": corr_length2,
         "distance": distance,
     }
 
@@ -88,17 +85,19 @@ def sample_parameters(realizations=20480, seed=123, **kwargs):
     # Get all posible combinations of parameters
     for _ in range(realizations):
         # Generates list of randomly picked parameters
-        rand_idx = rng.integers(35, size=7)
+        rand_idx = rng.integers(35, size=5)
 
-        if rand_idx[2] == rand_idx[3]:
+        if rand_idx[1] == rand_idx[2]:
             # If epsilon1==epsilon2, replace former
-            new_set = list(set(np.arange(35)).difference([rand_idx[3]]))
-            rand_idx[3] = rng.choice(new_set)
+            new_set = list(set(np.arange(35)).difference([rand_idx[2]]))
+            rand_idx[2] = rng.choice(new_set)
 
         items = [param[rand_idx[i]] for i, param in enumerate(parameters_list)]
 
         # Form dicts of parameters for SpmSurface and yield it
         surf_params = dict(zip(params_to_sample.keys(), items))
+        surf_params.update({"corr_length" : surf_params["rms_high"] * 6})
+        surf_params.update({"corr_length_2" : surf_params["rms_high_2"] * 6})
 
         yield surf_params
 
@@ -193,13 +192,13 @@ def fixed_parameter_grid(realizations, interval, seed=123, p_name="epsilon"):
     
     # Set fixed parameters
     grid = {
-        "rms_high": 0.08,
+        "rms_high": 0.008,
         "corr_length": 6 * 0.008,
         "epsilon": 9.0,
-        "epsilon_2": 16.0,
-        "rms_high_2": 0.008,
-        "corr_length_2": 6 * 0.008,
-        "distance": 0.35,
+        "epsilon_2": 17.0,
+        "rms_high_2": 0.006,
+        "corr_length_2": 6 * 0.006,
+        "distance": 0.2,
     }
 
     rng = np.random.default_rng(seed)
@@ -263,8 +262,9 @@ def make_labeled_data(
 
     for idx in range(realizations):
         # Realization of surface and polarizarion signature
-        param = next(surf_parameters_generator)
-        surface = SpmSurface(**param)
+        params = next(surf_parameters_generator)
+        params.update({"two_layer": True})
+        surface = SpmSurface(**params)
 
         try:
             signature = surface.polarization_signature(
@@ -283,7 +283,7 @@ def make_labeled_data(
         else:
             # Stack result in data
             data[idx, :, :] = signature
-            label[idx] = param[parameter_name]
+            label[idx] = params[parameter_name]
 
     return (data, label)
 
@@ -339,3 +339,41 @@ def load_data(file_name):
     data = np.load(file_path)
 
     return data
+
+# def main():
+#     # Constants parameters: incident wave length and number [cm]
+#     lambda_ = 0.245
+
+#     # Incident Azimut and polar angle [radians]
+#     theta, phi = 38.5 * np.pi / 180, 0
+
+#     # Initialize surface parameters generator 
+#     parameters_generator = sample_parameters(seed=435)  
+#     parameters = next(parameters_generator)
+#     parameters.update({"two_layer": True})
+
+#     # Calculate polarimetric signature    
+#     surf = SpmSurface(**parameters)
+#     signature = surf.polarization_signature(lambda_, theta, phi)
+
+#     iterations = 0
+#     while (np.any(signature <= 0.0)):
+#         iterations += 1
+#         try:
+#             parameters = next(parameters_generator)
+#             parameters.update({"two_layer": True})
+#         except:
+#             raise (
+#                 "No se encontraron los parámetros luego de"
+#                 f"{iterations} iteraciones."
+#             )    
+#         else:    
+#             surf = SpmSurface(**parameters)
+#             signature = surf.polarization_signature(lambda_, theta, phi)
+
+#     print(parameters)
+#     print(iterations)
+
+# if __name__ == "__main__":
+#     main()        
+

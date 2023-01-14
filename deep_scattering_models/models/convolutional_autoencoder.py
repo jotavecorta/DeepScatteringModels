@@ -2,6 +2,7 @@ import os
 import warnings
 
 import numpy as np
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import tensorflow as tf
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras import layers

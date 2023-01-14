@@ -85,9 +85,9 @@ def to_dB(data):
     # Replace zeros to take log    
     no_zeros_data = np.where(data>0.0, data, data[data>0.0].min())
     
-    return 10*np.log10(no_zeros_data)
+    return 10*np.log10(no_zeros_data) 
 
-def remove_outliers(data, k=1.5):
+def remove_outliers(data, labels=None, k=1.5):
     """Removes surfaces samples with values outside interquartile range
     
     Parameters
@@ -95,6 +95,8 @@ def remove_outliers(data, k=1.5):
     data : ``numpy.ndarray``
         Stack of surface polarization signature samples of shape
         (n_samples, 45, 90).
+    labels :  ``numpy.ndarray``  
+        Labels of the original data, for use in supervised training.
     k : ``int``, default: 1.5
         Scale of the range. Data outside de interval 
         q1-k*iqr < data < q3+k*iqr, with q1 and q3 first and third quartiles,
@@ -129,6 +131,15 @@ def remove_outliers(data, k=1.5):
     )    
 
     mask = np.logical_and(lower_bound, upper_bound)
-    
-    return np.reshape(reshaped_data[mask], (-1, shape[1], shape[2]))       
+
+    no_outliers_data = np.reshape(
+        reshaped_data[mask], (-1, shape[1], shape[2])
+        )
+
+    if labels is not None:
+        new_labels = labels[np.all(np.reshape(data, (shape[0], -1))>=-1e-9, axis=1)]
+        return no_outliers_data, new_labels[mask]  
+    else:
+        return no_outliers_data            
+
 
