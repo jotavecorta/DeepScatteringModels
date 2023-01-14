@@ -83,7 +83,7 @@ venv.bak/
 *.npy
 *.pkl
 *.pb
-variables.*
+variables/
 
 # Others
 # mypy
