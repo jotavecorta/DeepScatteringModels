@@ -219,7 +219,7 @@ def load_configuration(config_filename, scattering_model='spm'):
     model_dir = os.path.join(src_dir, 'models') 
 
     filename = f'{config_filename}_{scattering_model}.json'
-    json_path = os.path.join(model_dir, config_filename)
+    json_path = os.path.join(model_dir, filename)
 
     with open(json_path, 'r') as file_:
         config_dict = json.load(file_)   
