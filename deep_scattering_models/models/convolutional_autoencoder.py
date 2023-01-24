@@ -25,7 +25,7 @@ warnings.filterwarnings("ignore", category=FutureWarning)
 
 
 class ConvAutoencoder(Model):
-    def __init__(self, latent_dim, input_shape, conv_layers=None, dense_layers=None):
+    def __init__(self, latent_dim, input_shape, conv_layers=None, dense_layers=None, sparse=False):
         super().__init__()
         self.latent_dim = latent_dim
         
@@ -34,6 +34,8 @@ class ConvAutoencoder(Model):
         
         self.conv_layers = {} if conv_layers is None else conv_layers
         self.dense_layers = {} if dense_layers is None else dense_layers
+
+        self.sparse = sparse
 
         self.encoder = self._create_encoder()
         self.decoder = self._create_decoder()
@@ -106,6 +108,9 @@ class ConvAutoencoder(Model):
 
         # Add latent space layer
         model.add(layers.Dense(units=self.latent_dim, activation="linear"))
+
+        if self.sparse:
+            model.add(layers.ActivityRegularization(l1=1e-4))
 
         return model
 

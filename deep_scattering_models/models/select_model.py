@@ -69,18 +69,18 @@ def k_fold_cv(data, model_creator, configuration, cv_splits=5):
         model_wrapper = KerasRegressor(
             model_creator,
             **configuration,
-            epochs=80,
+            epochs=100,
             verbose=0,
             validation_data=(scaled_test, scaled_test)
         )
         history = model_wrapper.fit(scaled_train, scaled_train)
 
         # Calculate score
-        score = history.history['val_mean_squared_error'][-15:]
+        score = history.history['val_mean_squared_error'][-20:]
         fold_score.append(np.mean(score))
 
         # Train Score
-        train_score = history.history['mean_squared_error'][-15:]
+        train_score = history.history['mean_squared_error'][-20:]
         fold_train_score.append(np.mean(train_score))
 
         # Clear Tensorflow graph

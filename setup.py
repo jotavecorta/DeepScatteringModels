@@ -7,11 +7,11 @@ with open("README.md", "r") as fp:
 REQUIREMENTS = [
     "numpy==1.22.4",
     "matplotlib==3.5.2",
-    "keras==2.10.0",
+    "keras==2.11.0",
     "pandas==1.4.3",
     "scikit-learn==1.1.2",
     "scipy==1.9.1",
-    "tensorflow-gpu==2.10"
+    "tensorflow-gpu==2.11.0"
     ]
 
 setup(
