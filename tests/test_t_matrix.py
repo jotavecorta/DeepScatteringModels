@@ -5,7 +5,7 @@ from numpy.testing import assert_allclose, assert_array_less
 
 import pytest
 
-from deep_scattering_models.small_perturbation_method import t_matrix
+from src.small_perturbation_method import t_matrix
 
 LOW_SURF_ARGS = [.004, 6*.004, 3]
 

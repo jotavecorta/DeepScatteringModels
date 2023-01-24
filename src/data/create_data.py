@@ -9,7 +9,7 @@ from warnings import warn
 import numpy as np
 import scipy
 
-from deep_scattering_models.small_perturbation_method.t_matrix import SpmSurface
+from src.small_perturbation_method.t_matrix import SpmSurface
 
 
 def init_parameters_grid(grid_length=35):

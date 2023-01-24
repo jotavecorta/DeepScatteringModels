@@ -13,7 +13,7 @@ from tensorflow.keras.losses import MeanSquaredError
 from tensorflow.keras.optimizers.schedules import PolynomialDecay, PiecewiseConstantDecay
 from tensorflow.keras.optimizers.schedules import InverseTimeDecay, ExponentialDecay
 
-from deep_scattering_models.models.convolutional_autoencoder import ConvAutoencoder
+from src.models.convolutional_autoencoder import ConvAutoencoder
 
 # Global parameters
 FINAL_LEARNING_RATE = 0.00005

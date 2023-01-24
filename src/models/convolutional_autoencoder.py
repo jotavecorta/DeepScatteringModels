@@ -2,13 +2,15 @@ import os
 import warnings
 
 import numpy as np
+
+from src.models.regularizers import KLDivergenceRegularizer
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '1'
 import tensorflow as tf
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras import layers
 from tensorflow.python.util import deprecation
 
-from deep_scattering_models.models.select_model import (
+from src.models.select_model import (
     save_configuration, 
     load_configuration
     )
@@ -107,10 +109,17 @@ class ConvAutoencoder(Model):
                 )
 
         # Add latent space layer
-        model.add(layers.Dense(units=self.latent_dim, activation="linear"))
+        #model.add(layers.Dense(units=self.latent_dim, activation="linear"))
 
         if self.sparse:
-            model.add(layers.ActivityRegularization(l1=1e-4))
+            model.add(layers.Dense(
+                units=self.latent_dim, 
+                activation="linear", 
+                activivity_regularizer = KLDivergenceRegularizer(weigth=.5)
+                ))
+            #model.add(layers.ActivityRegularization(l1=1e-4))
+        else:
+            model.add(layers.Dense(units=self.latent_dim, activation="linear"))
 
         return model
 
