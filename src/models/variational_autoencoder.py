@@ -1,6 +1,6 @@
 import tensorflow as tf
-from tensorflow.python.keras.losses import mean_squared_error
-from tensorflow.python.keras import layers
+from tensorflow.keras.losses import mean_squared_error
+from tensorflow.keras import layers
 
 from .convolutional_autoencoder import ConvAutoencoder
 

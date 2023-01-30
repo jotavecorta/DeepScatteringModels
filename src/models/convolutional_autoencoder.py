@@ -31,8 +31,8 @@ class ConvAutoencoder(Model):
         self._input_shape = input_shape
         self._match_shape = 0
 
-        self._conv_layers = {} if conv_layers is None else conv_layers
-        self._dense_layers = {} if dense_layers is None else dense_layers
+        self.conv_layers = {} if conv_layers is None else conv_layers
+        self.dense_layers = {} if dense_layers is None else dense_layers
 
         self.sparse = sparse
 
@@ -41,8 +41,8 @@ class ConvAutoencoder(Model):
 
     def _create_encoder(self):
         # Rename layers configuration
-        dense_config = self._dense_layers
-        conv_config = self._conv_layers
+        dense_config = self.dense_layers
+        conv_config = self.conv_layers
 
         input_shape = self._input_shape
 
@@ -109,8 +109,8 @@ class ConvAutoencoder(Model):
 
     def _create_decoder(self):
         # Rename layers configuration
-        dense_config = self._dense_layers
-        conv_config = self._conv_layers
+        dense_config = self.dense_layers
+        conv_config = self.conv_layers
 
         # Create a secuential model with input shape
         model = tf.keras.Sequential()
