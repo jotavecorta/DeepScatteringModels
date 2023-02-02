@@ -1,9 +1,8 @@
 import tensorflow as tf
-from tensorflow.keras import layers, losses
+from tensorflow.keras import layers
 from tensorflow.keras.losses import MeanSquaredError
 
-from .convolutional_autoencoder import ConvAutoencoder
-
+from src.models.convolutional_autoencoder import ConvAutoencoder
 
 def kl_loss(z_mean, z_log_var):
     return -0.5 * tf.reduce_mean(z_log_var - tf.square(z_mean) - tf.exp(z_log_var) + 1)
@@ -50,14 +49,17 @@ class VariationalAutoencoder(ConvAutoencoder):
         decoded = self.decoder(encoded)
 
         # Add a loss for latent space and a loss for the rest of the network
+        mse = MeanSquaredError()
         self.add_loss(kl_loss(z_mean, z_log_var))
-        #self.add_loss(mean_squared_error(inputs, decoded))
+        self.add_loss(mse(inputs, decoded))
 
-        self.add_metric(kl_loss, name="kl_loss", aggregation="mean")
-        self.add_metric(MeanSquaredError(), name="mse_loss", aggregation="mean")
+        self.add_metric(kl_loss(z_mean, z_log_var), name="kullback_leiber", aggregation="mean")
+        self.add_metric(mse(inputs, decoded), name="mean_squared_error", aggregation="mean")
 
         return decoded
     
     def summary(self):
         print(self.encoder.summary())
         print(self.decoder.summary())
+
+
