@@ -66,6 +66,56 @@ def build_cae_architecture(
 
     return model    
 
+def build_vae_architecture(
+    latent_dimension=10,
+    conv_layers_config=None, 
+    dense_layers_config=None,
+    optimizer = "adam",
+    input_shape = (45, 90, 1)
+    ):
+    """Returns a compiled Variational Autoencoder model with
+    the desired architecture.
+
+    Parameters
+    ----------
+    latent_dimension : ``int``, default: 10         
+        Number of units that connects encoder and decoder in the
+        model.
+    conv_layers_config : ``dict``, default: None
+        To use as input in ``conv_layers`` in ConvAutoencoder object
+        (see documentation).
+    dense_layers_config : ``dict``, default: None
+        To use as input in ``dense_layers`` in ConvAutoencoder object
+        (see documentation).  
+    optimizer : ``str`` or ``tf.keras.optimizers.Optimizer``
+        Gradient Descent optimizer. Could be a string identifier e.g 'adam'.         
+    input_shape : ``tuple``, default: (45, 90, 1)
+        Shape of the data to be used in training.
+                
+    Returns
+    -------
+    model : ``models.variational_autoencoder.VariationalAutoencoder``      
+        Compiled VariationalAutoencoder object.
+    
+    """
+    # Set TensorFlow seed for reproducible results                   
+    tf.random.set_seed(123) 
+
+    # Create and Compile Model
+    model = VariationalAutoencoder(
+        latent_dimension, 
+        input_shape,
+        conv_layers=conv_layers_config,
+        dense_layers=dense_layers_config
+    )
+    model.compile(
+        optimizer=optimizer,
+        loss=MeanSquaredError()
+        )
+
+    return model    
+
+
 def create_autoencoder(optimizer='adam',
                        learning_rate=0.0001,
                        beta_momentum=.9,
