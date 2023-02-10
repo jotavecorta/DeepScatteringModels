@@ -14,6 +14,7 @@ from tensorflow.keras.optimizers.schedules import PolynomialDecay, PiecewiseCons
 from tensorflow.keras.optimizers.schedules import InverseTimeDecay, ExponentialDecay
 
 from src.models.convolutional_autoencoder import ConvAutoencoder
+from src.models.variational_autoencoder import VariationalAutoencoder
 
 # Global parameters
 FINAL_LEARNING_RATE = 0.00005
@@ -23,6 +24,7 @@ def build_cae_architecture(
     latent_dimension=10,
     conv_layers_config=None, 
     dense_layers_config=None,
+    optimizer = "adam",
     input_shape = (45, 90, 1)
     ):
     """Returns a compiled ConvAutoencoder model with
@@ -38,7 +40,9 @@ def build_cae_architecture(
         (see documentation).
     dense_layers_config : ``dict``, default: None
         To use as input in ``dense_layers`` in ConvAutoencoder object
-        (see documentation).        
+        (see documentation).   
+    optimizer : ``str`` or ``tf.keras.optimizers.Optimizer``
+        Gradient Descent optimizer. Could be a string identifier e.g 'adam'.               
     input_shape : ``tuple``, default: (45, 90, 1)
         Shape of the data to be used in training.
                 
@@ -59,7 +63,7 @@ def build_cae_architecture(
         dense_layers=dense_layers_config
     )
     model.compile(
-        optimizer="adam",
+        optimizer=optimizer,
         loss=MeanSquaredError(),
         metrics=['mean_squared_error', 'mean_absolute_error']
         )
